@@ -315,10 +315,10 @@ const HOME_HTML = `<!DOCTYPE html>
   <div class="wrap nav">
     <a href="#" class="brand"><span class="mark">공</span>공부모아</a>
     <nav class="nav-links">
-      <a href="/지역">지역별수업</a>
-      <a href="/학교">학교별수업</a>
-      <a href="/과목">과목수업</a>
-      <a href="/기타">기타수업</a>
+      <a href="/regions">지역별수업</a>
+      <a href="/schools">학교별수업</a>
+      <a href="/subjects">과목수업</a>
+      <a href="/others">기타수업</a>
     </nav>
     <a href="#contact" class="btn btn-primary">무료 상담 받기</a>
     <button class="nav-toggle" aria-label="메뉴">☰</button>
@@ -375,25 +375,25 @@ const HOME_HTML = `<!DOCTYPE html>
       <p>원하는 방식으로 골라서 딱 맞는 수업을 만나보세요.</p>
     </div>
     <div class="cat-grid">
-      <a href="/지역" class="cat cat-1 reveal">
+      <a href="/regions" class="cat cat-1 reveal">
         <span class="cat-ic">📍</span>
         <h3>지역별수업</h3>
         <p>우리 동네에서 가까운 선생님을 찾아 대면·화상으로 만나요.</p>
         <span class="cat-go">동네 선생님 보기 →</span>
       </a>
-      <a href="/학교" class="cat cat-2 reveal">
+      <a href="/schools" class="cat cat-2 reveal">
         <span class="cat-ic">🏫</span>
         <h3>학교별수업</h3>
         <p>우리 학교 시험 범위와 출제 유형에 딱 맞춘 내신 대비 수업.</p>
         <span class="cat-go">학교 찾기 →</span>
       </a>
-      <a href="/과목" class="cat cat-3 reveal">
+      <a href="/subjects" class="cat cat-3 reveal">
         <span class="cat-ic">📐</span>
         <h3>과목수업</h3>
         <p>수학·영어·국어부터 탐구까지, 필요한 과목만 골라 집중해요.</p>
         <span class="cat-go">과목 고르기 →</span>
       </a>
-      <a href="/기타" class="cat cat-4 reveal">
+      <a href="/others" class="cat cat-4 reveal">
         <span class="cat-ic">🎨</span>
         <h3>기타수업</h3>
         <p>논술·면접·방학 특강 등 목표에 맞춘 다양한 특별 수업.</p>
@@ -545,8 +545,8 @@ const HOME_HTML = `<!DOCTYPE html>
     <div class="foot-links">
       <div>
         <b>바로가기</b>
-        <a href="/지역">지역별수업</a>
-        <a href="/과목">과목수업</a>
+        <a href="/regions">지역별수업</a>
+        <a href="/subjects">과목수업</a>
         <a href="#reviews">수강 후기</a>
       </div>
       <div>
@@ -593,17 +593,17 @@ const HOME_HTML = `<!DOCTYPE html>
 /* ========== 과목 정의 ========== */
 // 과목 정의 — 여기만 고치면 전체 페이지에 반영됩니다.
 const SUBJECTS = [
-  { slug: '수학', name: '수학', emoji: '📐', color: 'mint',
+  { slug: 'math', name: '수학', emoji: '📐', color: 'mint',
     desc: '개념부터 실전까지, 막힌 단원을 정확히 짚어 성적을 끌어올립니다.' },
-  { slug: '영어', name: '영어', emoji: '📗', color: 'coral',
+  { slug: 'english', name: '영어', emoji: '📗', color: 'coral',
     desc: '어휘·구문·독해를 단계별로 잡아 내신과 수능을 함께 대비합니다.' },
-  { slug: '국어', name: '국어', emoji: '📖', color: 'grape',
+  { slug: 'korean', name: '국어', emoji: '📖', color: 'grape',
     desc: '문학과 비문학 지문 접근법을 익혀 흔들리지 않는 독해력을 만듭니다.' },
-  { slug: '과학', name: '과학', emoji: '🔬', color: 'sky',
+  { slug: 'science', name: '과학', emoji: '🔬', color: 'sky',
     desc: '물리·화학·생명·지구과학 개념을 실험과 원리 중심으로 이해합니다.' },
-  { slug: '사회', name: '사회', emoji: '🌏', color: 'yellow',
+  { slug: 'social', name: '사회', emoji: '🌏', color: 'yellow',
     desc: '흐름과 맥락을 잡아 암기 부담을 줄이고 서술형까지 대비합니다.' },
-  { slug: '논술', name: '논술', emoji: '✍️', color: 'pink',
+  { slug: 'essay', name: '논술', emoji: '✍️', color: 'pink',
     desc: '생각을 논리적으로 구성하고 글로 풀어내는 훈련을 합니다.' },
 ];
 
@@ -729,7 +729,7 @@ ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld)}</script
 <header><div class="wrap nav">
 <a href="/" class="brand"><span class="mark">공</span>${SITE.name}</a>
 <nav class="nav-links">
-<a href="/지역">지역별수업</a><a href="/학교">학교별수업</a><a href="/과목">과목수업</a><a href="/기타">기타수업</a>
+<a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a>
 </nav>
 <a href="/#contact" class="btn btn-primary">무료 상담</a>
 </div></header>
@@ -738,7 +738,7 @@ ${body}
 <footer><div class="wrap">
 <div class="foot">
 <div><b>${SITE.name}</b>초·중·고 1:1 맞춤 과외<br>아이의 속도에 맞춰 함께 성장합니다.</div>
-<div><b>수업</b><a href="/지역">지역별수업</a><a href="/학교">학교별수업</a><a href="/과목">과목수업</a><a href="/기타">기타수업</a></div>
+<div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
 <div><b>문의</b><a href="/#contact">무료 상담</a><a href="/#contact">카카오톡 채널</a></div>
 </div>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
@@ -776,15 +776,15 @@ function getSgg(sidoKey, sggKey) {
 function getDong(sidoKey, sggKey, dongName) {
   const g = getSgg(sidoKey, sggKey);
   if (!g) return null;
-  const hit = g.list.find(d => d[0] === dongName);
-  return hit ? { name: hit[0], code: hit[1], kind: hit[2] } : null;
+  const hit = g.list.find(d => d[3] === dongName || d[0] === dongName);
+  return hit ? { name: hit[0], code: hit[1], kind: hit[2], slug: hit[3] } : null;
 }
 
 /* ---------------- 공통 조각 ---------------- */
 
 function subjectRow(basePath, activeSlug) {
   return `<div class="subj-row">` + SUBJECTS.map(s =>
-    `<a class="subj" href="${basePath}/${U(s.slug)}과외"${s.slug === activeSlug ? ' style="border-color:var(--blue);color:var(--blue-deep)"' : ''}>${s.emoji} ${s.name}과외</a>`
+    `<a class="subj" href="${basePath}/${s.slug}"${s.slug === activeSlug ? ' style="border-color:var(--blue);color:var(--blue-deep)"' : ''}>${s.emoji} ${s.name}과외</a>`
   ).join('') + `</div>`;
 }
 
@@ -811,7 +811,7 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   const title = `${place} ${subj.name}과외 | ${SITE.name}`;
   const h1 = `${place} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
-  const basePath = dong ? `${parentPath}/${U(dong.name)}` : parentPath;
+  const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
 
   const desc = `${sido.full} ${sgg.disp} ${dong ? dong.name + ' ' : ''}${subj.name}과외. `
     + `초·중·고 1:1 맞춤 수업으로 ${subj.name} 성적을 올려드립니다. 무료 진단 상담 후 선생님을 연결해 드려요.`;
@@ -820,7 +820,7 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
 
   const crumbItems = [
     { name: '홈', url: '/' },
-    { name: '지역별수업', url: '/지역' },
+    { name: '지역별수업', url: '/regions' },
     { name: sido.full, url: `/${U(sido.key)}` },
     { name: sgg.disp, url: parentPath },
   ];
@@ -878,7 +878,7 @@ ${siblings.length ? `<section><div class="wrap">
 <h2>${esc(sgg.disp)} 다른 지역 ${subj.name}과외</h2>
 <p class="sub">가까운 지역도 함께 확인해 보세요.</p>
 <div class="linkcol">
-${siblings.map(d => `<a href="${parentPath}/${U(d[0])}/${U(subj.slug)}과외">${esc(d[0])} ${subj.name}과외</a>`).join('')}
+${siblings.map(d => `<a href="${parentPath}/${d[3]}/${subj.slug}">${esc(d[0])} ${subj.name}과외</a>`).join('')}
 </div>
 </div></section>` : ''}
 
@@ -919,7 +919,7 @@ ${subjectRow(base)}
 <span class="sec-tag">지역별</span><h2>${esc(sgg.disp)} 동네별 과외</h2>
 <p class="sub">우리 동네를 선택하면 과목별 수업을 볼 수 있어요.</p>
 <div class="linkcol">
-${sgg.list.map(d => `<a href="${base}/${U(d[0])}/수학과외">${esc(d[0])} 과외</a>`).join('')}
+${sgg.list.map(d => `<a href="${base}/${d[3]}/math">${esc(d[0])} 과외</a>`).join('')}
 </div>
 </div></section>
 
@@ -929,7 +929,7 @@ ${ctaBlock(sgg.disp)}`;
     title, desc, canonical: url,
     crumb: crumbs([
       { name: '홈', url: '/' },
-      { name: '지역별수업', url: '/지역' },
+      { name: '지역별수업', url: '/regions' },
       { name: sido.full, url: `/${U(sido.key)}` },
       { name: sgg.disp },
     ]),
@@ -965,7 +965,7 @@ ${ctaBlock(sido.full)}`;
 
   return page({
     title, desc, canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업', url: '/지역' }, { name: sido.full }]),
+    crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업', url: '/regions' }, { name: sido.full }]),
     body,
   });
 }
@@ -1016,7 +1016,7 @@ function subjectRootPage(url) {
 </div></section>
 <section><div class="wrap">
 <div class="grid g3">
-${SUBJECTS.map(s => `<a class="card" href="/과목/${U(s.slug)}과외"><div class="ic">${s.emoji}</div><h3>${s.name}과외</h3><p>${esc(s.desc)}</p></a>`).join('')}
+${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic">${s.emoji}</div><h3>${s.name}과외</h3><p>${esc(s.desc)}</p></a>`).join('')}
 </div>
 </div></section>
 ${ctaBlock('어떤 과목이든')}`;
@@ -1050,7 +1050,7 @@ ${ctaBlock(`${subj.name} 과외`)}`;
     title: `${subj.name}과외 | 초·중·고 1:1 맞춤 - ${SITE.name}`,
     desc: `${subj.name}과외. ${subj.desc} 전국 어디서나 무료 진단 후 선생님을 연결해 드립니다.`,
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업', url: '/과목' }, { name: `${subj.name}과외` }]),
+    crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업', url: '/subjects' }, { name: `${subj.name}과외` }]),
     body,
   });
 }
@@ -1059,9 +1059,9 @@ ${ctaBlock(`${subj.name} 과외`)}`;
 
 function comingSoonPage(kind, url) {
   const map = {
-    '학교': { emoji: '🏫', h1: '학교별수업',
+    'schools': { emoji: '🏫', h1: '학교별수업',
       lead: '우리 학교 시험 범위와 출제 유형에 맞춘 내신 대비 수업을 준비하고 있어요.' },
-    '기타': { emoji: '🎨', h1: '기타수업',
+    'others': { emoji: '🎨', h1: '기타수업',
       lead: '논술·면접·방학 특강 등 목표에 맞춘 특별 수업을 준비하고 있어요.' },
   };
   const v = map[kind];
@@ -1070,7 +1070,7 @@ function comingSoonPage(kind, url) {
 <span class="tagline">${v.emoji} ${v.h1}</span>
 <h1>${v.h1} 준비 중이에요</h1>
 <p class="lead">${v.lead} 먼저 상담을 남겨주시면 오픈 시 가장 먼저 안내해 드릴게요.</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">미리 상담 남기기 →</a><a href="/지역" class="btn btn-ghost">지역별수업 보기</a></div>
+<div class="cta-row"><a href="/#contact" class="btn btn-primary">미리 상담 남기기 →</a><a href="/regions" class="btn btn-ghost">지역별수업 보기</a></div>
 </div></section>
 ${ctaBlock(v.h1)}`;
   return page({
@@ -1104,8 +1104,8 @@ ${items.map(u => `<sitemap><loc>${u}</loc></sitemap>`).join('\n')}
 
 function sitemapMain(origin) {
   return xmlUrlset([
-    `${origin}/`, `${origin}/지역`, `${origin}/과목`,
-    ...SUBJECTS.map(s => `${origin}/과목/${U(s.slug)}과외`),
+    `${origin}/`, `${origin}/regions`, `${origin}/subjects`,
+    ...SUBJECTS.map(s => `${origin}/subjects/${s.slug}`),
     ...Object.keys(SIDO).map(k => `${origin}/${U(k)}`),
   ]);
 }
@@ -1117,9 +1117,9 @@ function sitemapSido(sidoKey, origin) {
   for (const [sggKey, v] of Object.entries(s.sgg)) {
     const base = `${origin}/${U(sidoKey)}/${U(sggKey)}`;
     urls.push(base);
-    for (const subj of SUBJECTS) urls.push(`${base}/${U(subj.slug)}과외`);
+    for (const subj of SUBJECTS) urls.push(`${base}/${subj.slug}`);
     for (const d of v.l) {
-      for (const subj of SUBJECTS) urls.push(`${base}/${U(d[0])}/${U(subj.slug)}과외`);
+      for (const subj of SUBJECTS) urls.push(`${base}/${d[3]}/${subj.slug}`);
     }
   }
   return xmlUrlset(urls);
@@ -1146,7 +1146,7 @@ function notFound(origin) {
     body: `<section class="hero"><div class="wrap">
 <h1>페이지를 찾을 수 없어요 🙏</h1>
 <p class="lead">주소가 바뀌었거나 없는 지역일 수 있어요. 지역 목록에서 다시 찾아보세요.</p>
-<div class="cta-row"><a href="/지역" class="btn btn-primary">지역별수업 보기</a><a href="/" class="btn btn-ghost">홈으로</a></div>
+<div class="cta-row"><a href="/regions" class="btn btn-primary">지역별수업 보기</a><a href="/" class="btn btn-ghost">홈으로</a></div>
 </div></section>`,
   }), 404);
 }
@@ -1178,22 +1178,21 @@ export default {
 
     if (seg.length === 0) return html(HOME_HTML);
 
-    if (seg[0] === '과목') {
+    if (seg[0] === 'subjects') {
       if (seg.length === 1) return html(subjectRootPage(origin + path));
-      const m = seg[1].match(/^(.+)과외$/);
-      const subj = m && SUBJECT_MAP[m[1]];
+      const subj = SUBJECT_MAP[seg[1]];
       if (subj) return html(subjectNationalPage(subj, origin + path));
       return notFound(origin);
     }
 
-    if (seg[0] === '지역') return html(regionRootPage(origin + path));
+    if (seg[0] === 'regions') return html(regionRootPage(origin + path));
 
-    if ((seg[0] === '학교' || seg[0] === '기타') && seg.length === 1) {
+    if ((seg[0] === 'schools' || seg[0] === 'others') && seg.length === 1) {
       return html(comingSoonPage(seg[0], origin + path));
     }
 
     const sido = getSido(seg[0]);
-    if (!sido) return env.ASSETS.fetch(request);
+    if (!sido) return notFound(origin);
 
     if (seg.length === 1) return html(sidoHubPage({ sido, url: origin + path }));
 
@@ -1202,9 +1201,7 @@ export default {
 
     if (seg.length === 2) return html(sggHubPage({ sido, sgg, url: origin + path }));
 
-    const last = seg[seg.length - 1];
-    const sm = last.match(/^(.+)과외$/);
-    const subj = sm && SUBJECT_MAP[sm[1]];
+    const subj = SUBJECT_MAP[seg[seg.length - 1]];
 
     if (seg.length === 3 && subj) {
       return html(regionSubjectPage({ sido, sgg, dong: null, subj, url: origin + path }));
@@ -1218,7 +1215,7 @@ export default {
 
     if (seg.length === 3) {
       const dong = getDong(sido.key, sgg.key, seg[2]);
-      if (dong) return Response.redirect(`${origin}${path}/${SUBJECTS[0].slug}과외`, 301);
+      if (dong) return Response.redirect(`${origin}${path}/${SUBJECTS[0].slug}`, 301);
     }
 
     return notFound(origin);
