@@ -1336,6 +1336,35 @@ function subjectRootPage(url) {
 ${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic">${s.emoji}</div><h3>${s.name}과외</h3><p>${esc(s.desc)}</p></a>`).join('')}
 </div>
 </div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">과목 선택 가이드</span>
+<h2>어떤 과목부터 시작해야 할까요?</h2>
+<p class="sub">과목 선택이 고민이라면 이 세 가지 기준으로 판단해 보세요.</p>
+<div class="grid g3">
+<div class="card"><div class="ic">🚨</div><h3>시험이 급하다면</h3><p>다가오는 내신에서 가장 위험한 과목부터 시작하세요. 시험 4주 전이라면 한 과목에 집중하는 것이 두 과목을 얕게 하는 것보다 결과가 좋습니다.</p></div>
+<div class="card"><div class="ic">🏗️</div><h3>장기전이라면</h3><p>수학과 영어부터 잡는 것이 정석입니다. 두 과목은 실력이 쌓이는 데 가장 오래 걸리는 계단식 과목이라, 일찍 시작할수록 유리합니다.</p></div>
+<div class="card"><div class="ic">🧭</div><h3>잘 모르겠다면</h3><p>무료 진단 상담에서 전 과목 상태를 확인하고 우선순위를 함께 정해드립니다. 막연한 불안보다 정확한 진단이 먼저입니다.</p></div>
+</div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">학년별 추천</span>
+<h2>학년별로 이런 조합을 추천해요</h2>
+<div class="grid g3">
+<div class="card"><div class="ic">🎒</div><h3>초등학생</h3><p>수학 연산·독서 습관이 최우선입니다. 수학 또는 국어 1과목으로 시작해 공부 습관을 만들고, 영어는 흥미 위주로 병행하는 조합이 좋습니다.</p></div>
+<div class="card"><div class="ic">📚</div><h3>중학생</h3><p>수학+영어 조합이 가장 많습니다. 고등 과정의 바탕이 되는 두 과목의 개념을 이 시기에 완성해야 고등에서 선택지가 넓어집니다.</p></div>
+<div class="card"><div class="ic">🎯</div><h3>고등학생</h3><p>내신 등급이 흔들리는 과목 1~2개에 집중 투자하세요. 수능 선택과목 전략까지 고려해 진단 상담에서 우선순위를 잡아드립니다.</p></div>
+</div>
+</div></section>
+
+${faqBlock([
+  { q: '여러 과목을 동시에 수강할 수 있나요?', a: '가능합니다. 과목별로 선생님을 각각 배정하거나, 가능한 경우 한 선생님이 두 과목을 함께 진행할 수도 있습니다. 일정은 조율해서 맞춰드려요.' },
+  { q: '중간에 과목을 바꿀 수 있나요?', a: '네, 시험 기간에는 급한 과목으로 잠시 전환했다가 돌아오는 것도 가능합니다. 학생 상황에 맞춰 유연하게 운영합니다.' },
+  { q: '과목마다 선생님이 다른가요?', a: '기본적으로 과목 전문 선생님을 배정합니다. 전공과 지도 경험을 확인한 선생님이 해당 과목을 맡아요.' },
+  { q: '어떤 과목이 개설되어 있나요?', a: '수학, 영어, 국어, 과학, 사회, 논술 6개 과목을 초등부터 고등까지 운영합니다. 이 외 과목이 필요하면 상담에서 문의해 주세요.' },
+])}
+
 ${ctaBlock('어떤 과목이든')}`;
   return page({
     title: `과목별 과외 | ${SITE.name}`,
@@ -1355,6 +1384,8 @@ function subjectNationalPage(subj, url) {
 <p class="lead">${esc(subj.desc)}</p>
 <div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
+${guideBlock(subj, '전국')}
+
 <section><div class="wrap">
 <span class="sec-tag">지역별</span><h2>지역별 ${subj.name}과외</h2>
 <p class="sub">우리 지역을 선택해 보세요.</p>
