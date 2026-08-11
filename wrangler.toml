@@ -2,7 +2,6 @@ name = "gongbumoa"
 main = "gongbumoa_worker.js"
 compatibility_date = "2026-07-23"
 
-# 도메인 연결 시 아래 주석을 풀고 사용하세요.
-# routes = [
-#   { pattern = "gongbumoa.com", custom_domain = true }
-# ]
+[[send_email]]
+name = "NOTIFY"
+destination_address = "hhhyunee3@naver.com"
