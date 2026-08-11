@@ -302,6 +302,35 @@ const HOME_HTML = `<!DOCTYPE html>
     .cta-inner{padding:44px 24px}
     .hero{padding:44px 0 64px}
   }
+
+  /* ---------- CONSULT FORM ---------- */
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:26px;max-width:640px;margin:0 auto;padding:44px 40px;box-shadow:var(--shadow)}
+  .form-head h2{font-size:clamp(24px,3.4vw,30px);margin-bottom:10px}
+  .form-head p{color:var(--ink-soft);font-size:15px;margin-bottom:28px}
+  .ff{margin-bottom:22px}
+  .ff label{display:block;font-weight:800;font-size:15.5px;margin-bottom:9px}
+  .ff label em{color:#E5484D;font-style:normal;font-size:13px;font-weight:700}
+  .ff .hint{font-size:13px;color:var(--ink-soft);margin:-3px 0 9px}
+  .ff .hint b{color:#E5484D}
+  .ff input,.ff select,.ff textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;background:#FCFCFA;padding:13px 15px;font-size:15px;font-family:'Pretendard';color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box}
+  .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(16,196,110,.13);background:#fff}
+  .ff input.err,.ff select.err{border-color:#E5484D}
+  .ff textarea{resize:vertical;min-height:80px}
+  .phone-row{display:flex;align-items:center;gap:8px}
+  .phone-row input{text-align:center;max-width:110px}
+  .phone-row span{color:var(--ink-soft)}
+  .addr-row{display:flex;gap:8px}
+  .addr-row input{flex:1;background:#F4F4F1}
+  .btn-addr{flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:0 18px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Pretendard'}
+  .btn-addr:hover{background:var(--blue-deep)}
+  .submit-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:800;font-family:'Pretendard';cursor:pointer;margin-top:6px;transition:transform .15s,background .15s;box-shadow:0 12px 22px -12px var(--blue)}
+  .submit-btn:hover{transform:translateY(-2px);background:var(--blue-deep)}
+  .submit-btn:disabled{opacity:.6;cursor:default;transform:none}
+  .form-msg{margin-top:14px;font-size:14.5px;font-weight:700;text-align:center;min-height:20px}
+  .form-msg.ok{color:var(--blue-deep)}
+  .form-msg.fail{color:#E5484D}
+  @media(max-width:640px){.form-card{padding:32px 22px}}
+
   @media(prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
     .reveal{opacity:1;transform:none}
@@ -521,16 +550,60 @@ const HOME_HTML = `<!DOCTYPE html>
   </div>
 </section>
 
-<!-- CTA -->
+<!-- CTA / 상담 신청폼 -->
 <section class="cta-band" id="contact">
   <div class="wrap">
-    <div class="cta-inner reveal">
-      <h2>먼저, 무료 진단부터 받아보세요</h2>
-      <p>아이의 현재 상태를 정확히 알려드리고, 딱 맞는 학습 방향을 제안해 드려요.</p>
-      <div class="btns">
-        <a href="#" class="btn btn-yellow">무료 상담 신청하기</a>
-        <a href="#" class="btn btn-white-ghost">카카오톡으로 문의</a>
+    <div class="form-card reveal">
+      <div class="form-head">
+        <h2>수업 상담 신청</h2>
+        <p>무료 30분 시범수업 받아보실 수 있습니다.<br>신청을 남겨주시면 순차적으로 연락드리고 있습니다 😊<br>급하신 경우 <a href="tel:01030388978" style="color:var(--blue-deep);font-weight:800">010-3038-8978</a> 로 전화 주세요.</p>
       </div>
+      <form id="consultForm" novalidate>
+        <div class="ff">
+          <label>1. 학생이름 <em>* 필수</em></label>
+          <input type="text" id="fName" placeholder="학생 이름을 입력해주세요." maxlength="20">
+        </div>
+        <div class="ff">
+          <label>2. 학년 <em>* 필수</em></label>
+          <select id="fGrade">
+            <option value="">학년을 선택해주세요</option>
+            <optgroup label="초등학교"><option>초1</option><option>초2</option><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup>
+            <optgroup label="중학교"><option>중1</option><option>중2</option><option>중3</option></optgroup>
+            <optgroup label="고등학교"><option>고1</option><option>고2</option><option>고3</option></optgroup>
+            <option>기타</option>
+          </select>
+        </div>
+        <div class="ff">
+          <label>3. 과목</label>
+          <input type="text" id="fSubject" placeholder="예) 수학, 영어 등" maxlength="40">
+        </div>
+        <div class="ff">
+          <label>4. 연락처 <em>* 필수</em></label>
+          <div class="phone-row">
+            <input type="tel" id="fP1" value="010" maxlength="3" inputmode="numeric">
+            <span>-</span>
+            <input type="tel" id="fP2" placeholder="0000" maxlength="4" inputmode="numeric">
+            <span>-</span>
+            <input type="tel" id="fP3" placeholder="0000" maxlength="4" inputmode="numeric">
+          </div>
+        </div>
+        <div class="ff">
+          <label>5. 주소 <em>* 필수</em></label>
+          <p class="hint">도로명 주소 검색 + 상세주소(동/호수)까지 <b>모두 입력</b>해야 신청이 완료됩니다.</p>
+          <div class="addr-row">
+            <input type="text" id="fAddr" placeholder="도로명 주소 검색" readonly>
+            <button type="button" class="btn-addr" id="addrBtn">주소 검색</button>
+          </div>
+          <input type="text" id="fAddrDetail" placeholder="상세 주소 (동/호수) * 필수" maxlength="60" style="margin-top:10px">
+        </div>
+        <div class="ff">
+          <label>6. 상담내용</label>
+          <textarea id="fMemo" rows="3">과외 문의드립니다.</textarea>
+        </div>
+        <input type="text" id="fWebsite" style="display:none" tabindex="-1" autocomplete="off">
+        <button type="submit" class="submit-btn" id="submitBtn">제출</button>
+        <p class="form-msg" id="formMsg"></p>
+      </form>
     </div>
   </div>
 </section>
@@ -552,8 +625,8 @@ const HOME_HTML = `<!DOCTYPE html>
       <div>
         <b>문의</b>
         <a href="#contact">무료 상담</a>
-        <a href="#">카카오톡 채널</a>
-        <a href="#">전화 문의</a>
+        <a href="#contact">상담 신청</a>
+        <a href="tel:01030388978">전화 010-3038-8978</a>
       </div>
     </div>
   </div>
@@ -579,6 +652,53 @@ const HOME_HTML = `<!DOCTYPE html>
     el.style.transitionDelay=(i%3*0.08)+'s';
     io.observe(el);
   });
+
+
+  // ===== 상담 신청폼 =====
+  (function(){
+    var $=function(id){return document.getElementById(id)};
+    var form=$('consultForm'); if(!form) return;
+    ['fP1','fP2','fP3'].forEach(function(id){
+      $(id).addEventListener('input',function(e){e.target.value=e.target.value.replace(/[^0-9]/g,'')});
+    });
+    var daumLoaded=false;
+    function openAddr(){ new daum.Postcode({oncomplete:function(data){ $('fAddr').value=data.roadAddress||data.jibunAddress; $('fAddrDetail').focus(); }}).open(); }
+    $('addrBtn').addEventListener('click',function(){
+      if(daumLoaded){openAddr();return;}
+      var s=document.createElement('script');
+      s.src='https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+      s.onload=function(){daumLoaded=true;openAddr();};
+      document.body.appendChild(s);
+    });
+    $('fAddr').addEventListener('click',function(){$('addrBtn').click();});
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      var msg=$('formMsg'); msg.className='form-msg'; msg.textContent='';
+      var bad=null;
+      function mark(el,isBad){ el.classList.toggle('err',!!isBad); if(isBad&&!bad)bad=el; }
+      mark($('fName'),!$('fName').value.trim());
+      mark($('fGrade'),!$('fGrade').value);
+      var p1=$('fP1').value,p2=$('fP2').value,p3=$('fP3').value;
+      var phoneOk=p1.length===3&&p1.indexOf('01')===0&&p2.length>=3&&p3.length===4;
+      mark($('fP2'),!phoneOk); mark($('fP3'),p3.length!==4);
+      mark($('fAddr'),!$('fAddr').value);
+      mark($('fAddrDetail'),!$('fAddrDetail').value.trim());
+      if(bad){msg.textContent='빨간 표시 항목을 확인해주세요.';msg.classList.add('fail');bad.focus();return;}
+      var btn=$('submitBtn'); btn.disabled=true; btn.textContent='접수 중...';
+      fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:$('fName').value.trim(),grade:$('fGrade').value,subject:$('fSubject').value.trim(),
+          phone:p1+'-'+p2+'-'+p3,addr:$('fAddr').value,addrDetail:$('fAddrDetail').value.trim(),
+          memo:$('fMemo').value.trim(),website:$('fWebsite').value,page:location.pathname})})
+      .then(function(r){return r.json()})
+      .then(function(j){
+        if(j.ok){ msg.textContent='신청이 접수되었습니다! 순차적으로 연락드릴게요 😊'; msg.classList.add('ok');
+          form.reset(); $('fP1').value='010'; $('fMemo').value='과외 문의드립니다.'; }
+        else{ throw 0; }
+      })
+      .catch(function(){ msg.textContent='일시적인 오류가 발생했어요. 잠시 후 다시 시도하거나 010-3038-8978 로 전화 주세요.'; msg.classList.add('fail'); })
+      .finally(function(){ btn.disabled=false; btn.textContent='제출'; });
+    });
+  })();
 
   // 모바일 메뉴 (간단 토글: 앵커로 스크롤)
   document.querySelector('.nav-toggle').addEventListener('click',()=>{
@@ -879,7 +999,7 @@ ${body}
 <div class="foot">
 <div><b>${SITE.name}</b>초·중·고 1:1 맞춤 과외<br>아이의 속도에 맞춰 함께 성장합니다.</div>
 <div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
-<div><b>문의</b><a href="/#contact">무료 상담</a><a href="/#contact">카카오톡 채널</a></div>
+<div><b>문의</b><a href="/#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
 </div>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
 </div></footer>
@@ -932,7 +1052,7 @@ function ctaBlock(where) {
   return `<section><div class="wrap"><div class="cta">
 <h2>${esc(where)} 무료 진단부터 받아보세요</h2>
 <p>아이의 현재 상태를 정확히 알려드리고, 딱 맞는 선생님을 연결해 드려요.</p>
-<div class="btns"><a href="/#contact" class="btn btn-yellow">무료 상담 신청</a><a href="/#contact" class="btn btn-wg">카카오톡 문의</a></div>
+<div class="btns"><a href="/#contact" class="btn btn-yellow">무료 상담 신청</a><a href="tel:01030388978" class="btn btn-wg">📞 010-3038-8978</a></div>
 </div></div></section>`;
 }
 
@@ -1381,6 +1501,122 @@ function homeWithMeta(origin) {
   return HOME_CACHE;
 }
 
+
+/* ---------------- 상담 신청 API (이메일 알림) ---------------- */
+
+const NOTIFY_TO = 'hhhyunee3@naver.com';        // 알림 받을 메일
+const NOTIFY_FROM = 'noreply@gongbumoa.com';    // 발신 주소 (도메인 고정)
+const CONTACT_TEL = '010-3038-8978';
+
+// ── 구글폼 백업 저장 (선택) ──────────────────────────
+// 구글폼의 "미리 채워진 링크"를 받으면 아래 두 값을 채워 넣으세요.
+// action: 폼 주소 끝을 /formResponse 로 바꾼 것
+// fields: 각 항목의 entry.XXXXXXX 번호
+const GOOGLE_FORM = {
+  action: '',   // 예: 'https://docs.google.com/forms/d/e/1FAIpQL.../formResponse'
+  fields: {
+    name: '',        // 학생이름 entry.XXXXXXX
+    grade: '',       // 학년
+    subject: '',     // 과목
+    phone: '',       // 연락처
+    addr: '',        // 주소
+    memo: '',        // 상담내용
+    page: '',        // 신청페이지
+  },
+};
+
+async function saveToGoogleForm(entry) {
+  if (!GOOGLE_FORM.action) return;
+  const f = GOOGLE_FORM.fields;
+  const body = new URLSearchParams();
+  const map = {
+    [f.name]: entry.name, [f.grade]: entry.grade, [f.subject]: entry.subject || '-',
+    [f.phone]: entry.phone, [f.addr]: entry.addr + ' ' + entry.addrDetail,
+    [f.memo]: entry.memo || '-', [f.page]: entry.page || '/',
+  };
+  for (const [k, v] of Object.entries(map)) if (k) body.append(k, v);
+  await fetch(GOOGLE_FORM.action, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+}
+
+const json = (obj, status = 200) => new Response(JSON.stringify(obj), {
+  status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+});
+
+// UTF-8 -> base64 (메일 제목/본문 인코딩용)
+function b64utf8(s) {
+  const bytes = new TextEncoder().encode(s);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+async function sendNotifyMail(env, entry) {
+  const subject = `[공부모아 상담신청] ${entry.name} (${entry.grade}${entry.subject ? ', ' + entry.subject : ''})`;
+  const lines = [
+    `접수일시: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`,
+    `학생이름: ${entry.name}`,
+    `학년: ${entry.grade}`,
+    `과목: ${entry.subject || '-'}`,
+    `연락처: ${entry.phone}`,
+    `주소: ${entry.addr} ${entry.addrDetail}`,
+    `상담내용: ${entry.memo || '-'}`,
+    `신청 페이지: ${entry.page || '/'}`,
+  ];
+  const raw = [
+    `From: Gongbumoa <${NOTIFY_FROM}>`,
+    `To: <${NOTIFY_TO}>`,
+    `Subject: =?UTF-8?B?${b64utf8(subject)}?=`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=utf-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    b64utf8(lines.join('\n')),
+  ].join('\r\n');
+  let EmailMessage;
+  try {
+    ({ EmailMessage } = await import('cloudflare:email'));
+  } catch {
+    // 로컬 테스트 환경: 원문 그대로 전달
+    return env.NOTIFY.send({ from: NOTIFY_FROM, to: NOTIFY_TO, raw });
+  }
+  const msg = new EmailMessage(NOTIFY_FROM, NOTIFY_TO, raw);
+  return env.NOTIFY.send(msg);
+}
+
+async function handleConsultPost(request, env) {
+  if (!env.NOTIFY) return json({ ok: false, error: 'no-mail' }, 500);
+  let d;
+  try { d = await request.json(); } catch { return json({ ok: false }, 400); }
+  if (d.website) return json({ ok: true }); // 스팸봇 허니팟
+  const name = String(d.name || '').trim().slice(0, 20);
+  const grade = String(d.grade || '').trim().slice(0, 10);
+  const phone = String(d.phone || '').trim().slice(0, 14);
+  const addr = String(d.addr || '').trim().slice(0, 120);
+  const addrDetail = String(d.addrDetail || '').trim().slice(0, 60);
+  if (!name || !grade || !/^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(phone) || !addr || !addrDetail) {
+    return json({ ok: false, error: 'invalid' }, 400);
+  }
+  const entry = {
+    name, grade, phone, addr, addrDetail,
+    subject: String(d.subject || '').trim().slice(0, 40),
+    memo: String(d.memo || '').trim().slice(0, 500),
+    page: String(d.page || '').slice(0, 200),
+  };
+  try {
+    await sendNotifyMail(env, entry);
+  } catch (e) {
+    return json({ ok: false, error: 'mail-fail' }, 500);
+  }
+  try { await saveToGoogleForm(entry); } catch (e) { /* 백업 실패는 무시 */ }
+  return json({ ok: true });
+}
+
 /* ---------------- 라우터 ---------------- */
 
 export default {
@@ -1389,6 +1625,9 @@ export default {
     const origin = SITE.origin || url.origin;
     const path = decodeURIComponent(url.pathname);
 
+    if (path === '/api/consult' && request.method === 'POST') {
+      return handleConsultPost(request, env);
+    }
     if (path === '/robots.txt') {
       const bots = ['Yeti', 'Googlebot', 'Bingbot',
         'GPTBot', 'OAI-SearchBot', 'ChatGPT-User',
