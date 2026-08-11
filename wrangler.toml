@@ -2,6 +2,11 @@ name = "gongbumoa"
 main = "gongbumoa_worker.js"
 compatibility_date = "2026-07-23"
 
+# ── 상담 신청 이메일 알림 ──────────────────────────────
+# 사용 전 준비 (Cloudflare 대시보드):
+#  1. gongbumoa.com 도메인 > 이메일(Email Routing) > 활성화
+#  2. 대상 주소(Destination addresses)에 hhhyunee3@naver.com 추가
+#  3. 네이버 메일로 온 확인(verify) 메일에서 링크 클릭
 [[send_email]]
 name = "NOTIFY"
 destination_address = "hhhyunee3@naver.com"
