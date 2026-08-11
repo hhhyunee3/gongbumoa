@@ -1557,32 +1557,64 @@ function b64utf8(s) {
 }
 
 async function sendNotifyMail(env, entry) {
-  const subject = `[공부모아 상담신청] ${entry.name} (${entry.grade}${entry.subject ? ', ' + entry.subject : ''})`;
-  const lines = [
-    `접수일시: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`,
-    `학생이름: ${entry.name}`,
-    `학년: ${entry.grade}`,
-    `과목: ${entry.subject || '-'}`,
-    `연락처: ${entry.phone}`,
-    `주소: ${entry.addr} ${entry.addrDetail}`,
-    `상담내용: ${entry.memo || '-'}`,
-    `신청 페이지: ${entry.page || '/'}`,
-  ];
+  // 주소 앞부분(시도+시군구)을 제목에 노출: "경남 창원시"
+  const region = entry.addr.split(' ').slice(0, 2).join(' ');
+  const subject = `[공부모아] ${entry.subject || '과외'} 상담 신청 - ${entry.name} (${region})`;
+  const telDigits = entry.phone.replace(/[^0-9]/g, '');
+  const when = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+
+  const row = (label, value, opts = {}) => `
+    <tr>
+      <td style="padding:14px 4px;border-bottom:1px solid #EFEDE6;color:#5B6079;font-size:14px;width:96px;vertical-align:top">${label}</td>
+      <td style="padding:14px 4px;border-bottom:1px solid #EFEDE6;color:${opts.color || '#232741'};font-size:15px;font-weight:${opts.bold ? '800' : '500'}">${opts.raw || esc(value)}</td>
+    </tr>`;
+
+  const htmlBody = `<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#F4F3EE;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif">
+  <div style="max-width:520px;margin:0 auto;padding:24px 14px">
+    <div style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #EAE7DC">
+      <div style="background:linear-gradient(135deg,#10C46E,#2CC98A);padding:30px 28px;color:#fff">
+        <div style="font-size:13px;opacity:.9;margin-bottom:8px">공부모아 · 일반 과외</div>
+        <div style="font-size:23px;font-weight:800;line-height:1.35">📞 새 상담 신청이 도착했습니다</div>
+      </div>
+      <div style="padding:12px 28px 6px">
+        <table style="width:100%;border-collapse:collapse">
+          ${row('학생이름', entry.name, { bold: true })}
+          ${row('학년', entry.grade)}
+          ${row('과목', entry.subject || '-', { color: '#0AA35A', bold: true })}
+          ${row('📞 연락처', '', { raw: `<a href="tel:${telDigits}" style="color:#0AA35A;font-weight:800;font-size:19px;text-decoration:none">${esc(entry.phone)}</a>` })}
+          ${row('주소', entry.addr + ' ' + entry.addrDetail)}
+          ${row('상담내용', entry.memo || '-')}
+        </table>
+        <div style="background:#EAF9F1;border-left:4px solid #10C46E;border-radius:10px;padding:18px 20px;margin:20px 0 8px">
+          <div style="font-size:14px;color:#232741;margin-bottom:12px">⏰ 빠른 응답이 매칭률을 높입니다</div>
+          <a href="tel:${telDigits}" style="display:inline-block;background:#10C46E;color:#fff;font-weight:800;font-size:15px;padding:12px 26px;border-radius:10px;text-decoration:none">📞 전화 걸기</a>
+        </div>
+        <div style="color:#A7AABB;font-size:12px;padding:12px 0 20px">
+          신청 시간: ${when}<br>
+          신청 페이지: ${esc(entry.page || '/')}
+        </div>
+      </div>
+    </div>
+  </div>
+</body></html>`;
+
   const raw = [
-    `From: Gongbumoa <${NOTIFY_FROM}>`,
+    `From: =?UTF-8?B?${b64utf8('공부모아')}?= <${NOTIFY_FROM}>`,
     `To: <${NOTIFY_TO}>`,
     `Subject: =?UTF-8?B?${b64utf8(subject)}?=`,
     'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=utf-8',
+    'Content-Type: text/html; charset=utf-8',
     'Content-Transfer-Encoding: base64',
     '',
-    b64utf8(lines.join('\n')),
+    b64utf8(htmlBody),
   ].join('\r\n');
+
   let EmailMessage;
   try {
     ({ EmailMessage } = await import('cloudflare:email'));
   } catch {
-    // 로컬 테스트 환경: 원문 그대로 전달
     return env.NOTIFY.send({ from: NOTIFY_FROM, to: NOTIFY_TO, raw });
   }
   const msg = new EmailMessage(NOTIFY_FROM, NOTIFY_TO, raw);
