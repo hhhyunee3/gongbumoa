@@ -869,7 +869,7 @@ const SITE = {
   origin: 'https://gongbumoa.com',
   desc: '전국 5,067개 지역에서 초·중·고 1:1 맞춤 과외를 연결하는 과외 매칭 서비스',
   // 사이트 소유 확인 코드 (네이버 서치어드바이저 / 구글 서치콘솔에서 발급 후 붙여넣기)
-  verifyNaver: '',
+  verifyNaver: '02237442fbd0f0a590037ef8def16e87eb9ca27f',
   verifyGoogle: '',
 };
 
