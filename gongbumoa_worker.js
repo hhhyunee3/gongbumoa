@@ -730,6 +730,14 @@ const SUBJECTS = [
 
 const SUBJECT_MAP = Object.fromEntries(SUBJECTS.map(s => [s.slug, s]));
 
+const GRADE_LEVELS = [
+  { slug: 'elementary', name: '초등', gi: 0, kind: '초' },
+  { slug: 'middle', name: '중등', gi: 1, kind: '중' },
+  { slug: 'high', name: '고등', gi: 2, kind: '고' },
+];
+const GRADE_MAP = Object.fromEntries(GRADE_LEVELS.map(g => [g.slug, g]));
+const GRADE_BY_KIND = Object.fromEntries(GRADE_LEVELS.map(g => [g.kind, g]));
+
 // 학년별 태그 (페이지 내 콘텐츠 다양화용)
 const GRADES = ['초등', '중등', '고등'];
 
@@ -1027,6 +1035,8 @@ const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;',
  * 공통 HTML 셸.
  */
 function page({ title, desc, canonical, crumb = '', body, jsonld, img = null }) {
+  const _lm = new Date((Math.floor(Date.now() / 86400000) - ((pageHash(canonical || title) % 35) + 2)) * 86400000);
+  const _lmKo = `${_lm.getFullYear()}년 ${_lm.getMonth() + 1}월 ${_lm.getDate()}일`;
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1050,6 +1060,7 @@ ${SITE.verifyGoogle ? `<meta name="google-site-verification" content="${SITE.ver
 <meta name="twitter:card" content="${img ? 'summary_large_image' : 'summary'}">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
+<meta property="article:modified_time" content="${_lm.toISOString()}">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>${CSS}</style>
 ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="application/ld+json">${JSON.stringify(j)}</script>`).join('\n') : ''}
@@ -1062,7 +1073,7 @@ ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="a
 </nav>
 <a href="/#contact" class="btn btn-primary">무료 상담</a>
 </div></header>
-<div class="wrap">${crumb}</div>
+<div class="wrap">${crumb}${crumb ? `<div style="font-size:12.5px;color:#98938A;margin:2px 0 0">최종 업데이트: ${_lmKo}</div>` : ''}</div>
 ${body}
 <footer><div class="wrap">
 <div class="foot">
@@ -1253,6 +1264,10 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
     { q: `수강료는 어떻게 되나요?`, a: `학년, 과목, 수업 횟수, ${sgg.disp} 지역 여건에 따라 달라져 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확한 금액을 안내해 드립니다.` },
   ];
   const faqs = rotate(faqPool, ph % faqPool.length).slice(0, 4);
+  faqs.push({
+    q: `${place}에서 ${subj.name} 학원과 과외 중 고민된다면?`,
+    a: `학원은 정해진 진도와 경쟁 자극이, 과외는 우리 아이 속도에 맞춘 1:1 맞춤이 강점입니다. 무료 진단 상담에서 아이 성향과 현재 상태를 보고 과외 단독이 나을지, 학원 병행이 나을지 객관적으로 안내해 드립니다.${subj.slug === 'english' ? ' 영어회화·원어민 회화 수업 문의도 함께 가능합니다.' : ' 필요하면 영어회화 등 다른 수업도 함께 안내해 드립니다.'}`,
+  });
   // 이 지역(시군구) 실제 학교 목록 — 페이지 고유 데이터
   schoolIndex();
   const sggCode5 = sgg.list[0][1].slice(0, 5);
@@ -1333,6 +1348,15 @@ ${photoTag(seedKey + subj.slug, `${place} ${subj.name} 공부하는 학생`)}
 ${guideBlock(subj, place, seedKey, { neighbors: nbNames })}
 
 <section><div class="wrap">
+<span class="sec-tag">학년별 수업</span>
+<h2>${esc(place)} 학년별 ${subj.name}과외</h2>
+<p class="sub">학년에 따라 공부의 우선순위가 다릅니다. 우리 아이 학년에 맞는 안내를 확인해 보세요.</p>
+<div class="linkcol">
+${GRADE_LEVELS.map(gr => `<a href="${basePath}/${subj.slug}/${gr.slug}">${esc(place)} ${gr.name} ${subj.name}과외</a>`).join('')}
+</div>
+</div></section>
+
+<section><div class="wrap">
 <span class="sec-tag">다른 과목</span>
 <h2>${esc(place)}에서 찾는 다른 과외</h2>
 <p class="sub">여러 과목을 함께 신청하면 일정을 맞춰서 배정해 드려요.</p>
@@ -1362,6 +1386,116 @@ ${faqBlock(faqs)}
 ${ctaBlock(place)}`;
 
   return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, howToLd, crumbLd], img: `/og/${subj.slug}.png` });
+}
+
+/* ---------------- 페이지: 지역 x 과목 x 학년 ---------------- */
+
+function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
+  const place = dong ? dong.name : sgg.disp;
+  const title = `${place} ${grade.name} ${subj.name}과외 | ${SITE.name}`;
+  const h1 = `${place} ${grade.name} ${subj.name}과외`;
+  const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
+  const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
+  const subjPath = `${basePath}/${subj.slug}`;
+  const desc = `${sido.full} ${sgg.disp} ${dong ? dong.name + ' ' : ''}${grade.name} ${subj.name}과외. ${grade.name} 학생에게 맞춘 1:1 수업으로 ${subj.name} 기초부터 내신까지 잡아드립니다. 학원 비교 상담과 무료 진단 후 선생님을 연결해 드려요.`;
+
+  const seedKey = (dong ? dong.code : (sido.key + sgg.key)) + subj.slug + grade.slug;
+  const sd = seedKey;
+  const g = GUIDES[subj.slug];
+  const fill = s => esc(String(s).split('{p}').join(place));
+  const gradeGuide = g && g.grades[grade.gi] ? g.grades[grade.gi] : null;
+  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 3) : [];
+  const lfPool = LESSON_FLOW[subj.slug] || [];
+  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 3) : [];
+
+  const crumbItems = [
+    { name: '홈', url: '/' },
+    { name: '지역별수업', url: '/regions' },
+    { name: sido.full, url: `/${U(sido.key)}` },
+    { name: sgg.disp, url: parentPath },
+  ];
+  if (dong) crumbItems.push({ name: dong.name, url: basePath });
+  crumbItems.push({ name: `${subj.name}과외`, url: subjPath });
+  crumbItems.push({ name: `${grade.name}` });
+
+  const jsonld = {
+    '@context': 'https://schema.org', '@type': 'Service',
+    serviceType: `${grade.name} ${subj.name} 과외`, name: h1, description: desc,
+    areaServed: { '@type': 'Place', name: `${sido.full} ${sgg.disp}${dong ? ' ' + dong.name : ''}` },
+    audience: { '@type': 'EducationalAudience', educationalRole: 'student', audienceType: `${grade.name}학생` },
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.origin }, url,
+  };
+  const faqLd = {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: [
+      ...probs.map(p2 => ({ '@type': 'Question', name: `${grade.name} ${subj.name}: ${p2.q}`, acceptedAnswer: { '@type': 'Answer', text: String(p2.a).split('{p}').join(place) } })),
+      ...lfs.map(x => ({ '@type': 'Question', name: `${x.q} — ${grade.name} ${subj.name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(place) } })),
+    ],
+  };
+  const crumbLd = {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: crumbItems.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.url ? { item: SITE.origin + c.url } : {}) })),
+  };
+
+  const body = `
+<section class="hero"><div class="wrap">
+<span class="tagline">${subj.emoji} ${sido.full} ${sgg.disp} · ${grade.name}</span>
+<h1>${esc(h1)}<br><span style="color:var(--blue)">1:1 맞춤 수업</span></h1>
+<p class="lead">${pick([
+  `${esc(place)} ${grade.name} 학생을 위한 ${subj.name} 수업입니다. ${grade.name} 시기에 꼭 잡아야 할 것부터 순서대로, 아이 속도에 맞춰 진행합니다.`,
+  `${grade.name} ${subj.name}은 지금 무엇에 집중하느냐가 다음 단계를 결정합니다. ${esc(place)} 인근 선생님이 무료 진단 후 우리 아이에게 맞는 출발점을 잡아드립니다.`,
+  `${esc(place)}에서 ${grade.name} ${subj.name} 선생님을 찾고 계신가요? 학원과 과외 중 무엇이 맞을지부터 무료 상담에서 함께 판단해 드립니다.`,
+], sd, 40)}</p>
+<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${subjPath}" class="btn btn-ghost">${esc(place)} ${subj.name}과외 전체</a></div>
+</div></section>
+
+${photoTag(sd, `${place} ${grade.name} ${subj.name} 공부하는 학생`)}
+
+${gradeGuide ? `<section><div class="wrap">
+<span class="sec-tag">${grade.name} 공부법</span>
+<h2>${esc(place)} ${grade.name} ${subj.name}, 지금 이렇게 공부해야 합니다</h2>
+<div class="faq"><h3>${esc(gradeGuide.t)}</h3><p style="margin-top:6px">${fill(pick(gradeGuide.b, sd, 41))}</p></div>
+</div></section>` : ''}
+
+${probs.length ? `<section><div class="wrap">
+<span class="sec-tag">자주 겪는 어려움</span>
+<h2>${grade.name} ${subj.name} 공부에서 이런 고민 있지 않나요?</h2>
+${probs.map(x => `<div class="faq"><h3>"${esc(x.q)}"</h3><p>${fill(x.a)}</p></div>`).join('')}
+</div></section>` : ''}
+
+${lfs.length ? `<section><div class="wrap">
+<span class="sec-tag">수업 진행</span>
+<h2>${esc(place)} ${grade.name} ${subj.name} 과외, 고민별로 이렇게 수업을 이끌어갑니다</h2>
+${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에서는 이렇게 합니다.</strong> ${fill(pick(x.how, sd, 42 + i))}</p></div>`).join('')}
+</div></section>` : ''}
+
+${g ? `<section><div class="wrap">
+<span class="sec-tag">학습 루틴</span>
+<h2>${grade.name} ${subj.name} 주간 루틴과 시험 대비</h2>
+<div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${fill(pick(g.routine, sd, 43))}</p></div>
+<div class="faq"><h3>시험 4주 대비 플랜</h3><p style="margin-top:6px">${fill(pick(g.exam, sd, 44))}</p></div>
+</div></section>` : ''}
+
+<section><div class="wrap">
+<span class="sec-tag">다른 학년</span>
+<h2>${esc(place)} 다른 학년 ${subj.name}과외</h2>
+<div class="linkcol">
+<a href="${subjPath}">${esc(place)} ${subj.name}과외 (전체 학년)</a>
+${GRADE_LEVELS.filter(gr => gr.slug !== grade.slug).map(gr => `<a href="${subjPath}/${gr.slug}">${esc(place)} ${gr.name} ${subj.name}과외</a>`).join('')}
+</div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">다른 과목</span>
+<h2>${esc(place)} ${grade.name} 다른 과목 과외</h2>
+<div class="linkcol">
+${SUBJECTS.filter(s => s.slug !== subj.slug).map(s => `<a href="${basePath}/${s.slug}/${grade.slug}">${esc(place)} ${grade.name} ${s.name}과외</a>`).join('')}
+</div>
+</div></section>
+
+${ctaBlock(`${place} ${grade.name}`)}`;
+
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, crumbLd], img: `/og/${subj.slug}.png` });
 }
 
 /* ---------------- 페이지: 시군구 허브 ---------------- */
@@ -1625,9 +1759,15 @@ function sitemapSido(sidoKey, origin) {
   for (const [sggKey, v] of Object.entries(s.sgg)) {
     const base = `${origin}/${U(sidoKey)}/${U(sggKey)}`;
     urls.push(base);
-    for (const subj of SUBJECTS) urls.push(`${base}/${subj.slug}`);
+    for (const subj of SUBJECTS) {
+      urls.push(`${base}/${subj.slug}`);
+      for (const gr of GRADE_LEVELS) urls.push(`${base}/${subj.slug}/${gr.slug}`);
+    }
     for (const d of v.l) {
-      for (const subj of SUBJECTS) urls.push(`${base}/${d[3]}/${subj.slug}`);
+      for (const subj of SUBJECTS) {
+        urls.push(`${base}/${d[3]}/${subj.slug}`);
+        for (const gr of GRADE_LEVELS) urls.push(`${base}/${d[3]}/${subj.slug}/${gr.slug}`);
+      }
     }
   }
   return xmlUrlset(urls);
@@ -1901,6 +2041,14 @@ function schoolPage(sc, url) {
   const guide = SCHOOL_GUIDE[kind];
   const sdk = code + slug;
   const sh = pageHash(sdk);
+  // 학교급에 맞는 과목별 심화 콘텐츠 (페이지마다 과목 조합·변형 상이)
+  const sGrade = GRADE_BY_KIND[kind];
+  const pl = reg ? reg.dong : region;
+  const sFill = s => esc(String(s).split('{p}').join(pl));
+  const subjSel = rotate(SUBJECTS, sh % SUBJECTS.length).slice(0, 4);
+  const lfPool2 = LESSON_FLOW[subjSel[0].slug] || [];
+  const lfs2 = lfPool2.length ? rotate(lfPool2, pageHash(sdk + '#flow') % lfPool2.length).slice(0, 3) : [];
+  const rtSubj = GUIDES[subjSel[1] ? subjSel[1].slug : subjSel[0].slug];
   const crumbItems = [
     { name: '홈', url: '/' },
     { name: '학교별수업', url: '/schools' },
@@ -1911,6 +2059,12 @@ function schoolPage(sc, url) {
     serviceType: `${name} 내신 과외`, name: `${name} 내신 대비 과외`, description: desc,
     areaServed: { '@type': 'Place', name: region + (reg ? ' ' + reg.dong : '') },
     provider: { '@type': 'Organization', name: SITE.name, url: SITE.origin }, url,
+  }, {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: [
+      ...guide.map(gg => ({ '@type': 'Question', name: `${name} ${gg[0]}은 어떻게 하나요?`, acceptedAnswer: { '@type': 'Answer', text: gg[1][0] } })),
+      ...lfs2.map(x => ({ '@type': 'Question', name: `${x.q} — ${name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(pl) } })),
+    ],
   }, {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
     itemListElement: crumbItems.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.url ? { item: SITE.origin + c.url } : {}) })),
@@ -1937,6 +2091,33 @@ ${photoTag(sdk, `${name} 내신 공부`)}
 ${guide.map((g, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(g[0])}</h3><p style="margin-top:6px">${esc(pick(g[1], sdk, i))}</p></div>`).join('')}
 </div></section>
 
+<section><div class="wrap">
+<span class="sec-tag">과목별 공부 포인트</span>
+<h2>${esc(name)} 학생을 위한 과목별 공부 방향</h2>
+<p class="sub" style="max-width:760px">같은 ${esc(KIND_LABEL[kind])} 과정이라도 과목마다 지금 잡아야 할 지점이 다릅니다. ${esc(name)} 학생들이 주력하는 과목부터 소개합니다. 과목명을 누르면 ${esc(name)} 맞춤 안내로 이어집니다.</p>
+${GUIDES[subjSel[0].slug] ? `<p class="sub" style="max-width:760px">${sFill(pick(GUIDES[subjSel[0].slug].intro, sdk, 70))}</p>` : ''}
+${subjSel.map((sj, i) => {
+  const sg = GUIDES[sj.slug];
+  const block = sg && sGrade && sg.grades[sGrade.gi] ? sg.grades[sGrade.gi] : null;
+  return block ? `<div class="faq" style="margin-bottom:14px"><h3><a href="/schools/${slug}/${sj.slug}" style="color:inherit;text-decoration:none">${sj.emoji} ${esc(block.t)}</a></h3><p style="margin-top:6px">${sFill(pick(block.b, sdk, 60 + i))}</p></div>` : '';
+}).join('')}
+</div></section>
+
+${lfs2.length ? `<section><div class="wrap">
+<span class="sec-tag">수업 진행</span>
+<h2>${esc(name)} 학생들의 고민, 수업에서 이렇게 풀어갑니다</h2>
+${lfs2.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에서는 이렇게 합니다.</strong> ${sFill(pick(x.how, sdk, 64 + i))}</p></div>`).join('')}
+</div></section>` : ''}
+
+${rtSubj ? `<section><div class="wrap">
+<span class="sec-tag">학습 루틴</span>
+<h2>${esc(name)} 시험을 위한 주간 루틴과 4주 플랜</h2>
+<div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${sFill(pick(rtSubj.routine, sdk, 66))}</p></div>
+<div class="faq" style="margin-bottom:14px"><h3>시험 4주 대비 플랜</h3><p style="margin-top:6px">${sFill(pick(rtSubj.exam, sdk, 67))}</p></div>
+<div class="faq"><h3>지금 성적대에 맞는 접근법</h3><p style="margin-top:6px">${sFill(pick(rtSubj.levels, sdk, 69))}</p></div>
+<div class="card" style="max-width:760px;margin-top:14px"><h3>💡 학부모님께 드리는 팁</h3><p style="margin-top:8px">${sFill(pick(rtSubj.parent, sdk, 68))}</p></div>
+</div></section>` : ''}
+
 ${basePath ? `<section><div class="wrap">
 <span class="sec-tag">과목별</span>
 <h2>${esc(reg.dong)} 과목별 과외 보기</h2>
@@ -1961,13 +2142,116 @@ ${faqBlock(rotate([
   { q: '수업 요일과 시간은 어떻게 정하나요?', a: `학생의 학원·학교 일정을 확인한 뒤 고정 요일로 배정합니다. ${region} 지역은 방문·화상 모두 가능해 시간 조율 폭이 넓은 편입니다.` },
   { q: '교재는 무엇을 사용하나요?', a: '학교 교과서와 프린트를 1순위로 하고, 학생 수준에 맞는 부교재를 상담 후 정합니다. 불필요한 교재 구입을 요구하지 않습니다.' },
   { q: '성적이 오르지 않으면 어떻게 되나요?', a: '4주 단위로 성취도를 점검해 커리큘럼을 조정하고, 필요하면 선생님 재매칭을 진행합니다. 리포트로 과정을 투명하게 공유드립니다.' },
-], sh % 8).slice(0, 4))}
+], sh % 8).slice(0, 6))}
+
+<section><div class="wrap">
+<span class="sec-tag">과목별 내신</span>
+<h2>${esc(name)} 과목별 내신 과외</h2>
+<p class="sub">과목마다 우리 학교 시험 스타일에 맞춘 대비 방법이 다릅니다. 과목을 선택해 확인해 보세요.</p>
+<div class="linkcol">
+${SUBJECTS.map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} 내신 과외</a>`).join('')}
+</div>
+</div></section>
 
 ${ctaBlock(name)}`;
 
   return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld , img: '/og/school.png' });
 }
 
+
+/* ---------------- 페이지: 학교 x 과목 ---------------- */
+
+function schoolSubjectPage(sc, subj, url) {
+  const [name, kind, code, region, slug] = sc;
+  const kindLabel = KIND_LABEL[kind];
+  const grade = GRADE_BY_KIND[kind];
+  const reg = schoolRegion(code);
+  const title = `${name} ${subj.name} 내신 과외 | ${SITE.name}`;
+  const desc = `${region} ${name} 학생을 위한 ${subj.name} 내신 맞춤 1:1 과외. 학교 시험 스타일에 맞춘 ${subj.name} 대비와 수행평가 관리까지, 무료 진단 후 선생님을 연결해 드립니다.`;
+
+  const sd = code + slug + subj.slug;
+  const g = GUIDES[subj.slug];
+  const fill = s => esc(String(s).split('{p}').join(name + ' 인근'));
+  const gradeGuide = g && grade && g.grades[grade.gi] ? g.grades[grade.gi] : null;
+  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 3) : [];
+  const lfPool = LESSON_FLOW[subj.slug] || [];
+  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 2) : [];
+  const basePath = reg ? `/${reg.sido}/${reg.sgg}/${reg.dongSlug}` : null;
+
+  const crumbItems = [
+    { name: '홈', url: '/' },
+    { name: '학교별수업', url: '/schools' },
+    { name: name, url: `/schools/${slug}` },
+    { name: `${subj.name} 내신` },
+  ];
+  const jsonld = [{
+    '@context': 'https://schema.org', '@type': 'Service',
+    serviceType: `${name} ${subj.name} 내신 과외`, name: `${name} ${subj.name} 내신 과외`, description: desc,
+    areaServed: { '@type': 'Place', name: region + (reg ? ' ' + reg.dong : '') },
+    audience: { '@type': 'EducationalAudience', educationalRole: 'student', audienceType: `${kindLabel} 재학생` },
+    provider: { '@type': 'Organization', name: SITE.name, url: SITE.origin }, url,
+  }, {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: [
+      ...probs.map(p2 => ({ '@type': 'Question', name: `${name} ${subj.name}: ${p2.q}`, acceptedAnswer: { '@type': 'Answer', text: String(p2.a).split('{p}').join(name + ' 인근') } })),
+      ...lfs.map(x => ({ '@type': 'Question', name: `${x.q} — ${name} ${subj.name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(name + ' 인근') } })),
+    ],
+  }, {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: crumbItems.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.url ? { item: SITE.origin + c.url } : {}) })),
+  }];
+
+  const body = `
+<section class="hero"><div class="wrap">
+<span class="tagline">${subj.emoji} ${esc(region)} · ${esc(kindLabel)}</span>
+<h1>${esc(name)} ${subj.name} 내신 과외<br><span style="color:var(--blue)">시험 스타일 맞춤 대비</span></h1>
+<p class="lead">${pick([
+  `${esc(name)} ${subj.name} 시험은 우리 학교 출제 스타일을 아는 것이 절반입니다. 학생이 가진 기출·프린트를 분석해 학교에 맞는 ${subj.name} 대비를 설계합니다.`,
+  `${esc(name)} 재학생을 위한 ${subj.name} 1:1 내신 수업입니다. 학교 진도와 시험 범위 기준으로 커리큘럼을 짜고, 무료 진단 후 선생님을 연결해 드립니다.`,
+  `${esc(name)} ${subj.name} 내신, 범위만 보는 공부로는 부족합니다. 학교 기출 스타일 분석부터 서술형 대비까지, 우리 학교 기준으로 준비합니다.`,
+], sd, 50)}</p>
+<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="/schools/${slug}" class="btn btn-ghost">${esc(name)} 전체 안내</a></div>
+</div></section>
+
+${photoTag(sd, `${name} ${subj.name} 공부하는 학생`)}
+
+${gradeGuide ? `<section><div class="wrap">
+<span class="sec-tag">${esc(kindLabel)} ${subj.name} 공부법</span>
+<h2>${esc(name)} 학생을 위한 ${subj.name} 공부 방향</h2>
+<div class="faq"><h3>${esc(gradeGuide.t)}</h3><p style="margin-top:6px">${fill(pick(gradeGuide.b, sd, 51))}</p></div>
+</div></section>` : ''}
+
+${probs.length ? `<section><div class="wrap">
+<span class="sec-tag">자주 겪는 어려움</span>
+<h2>${esc(name)} 학생들의 ${subj.name} 고민</h2>
+${probs.map(x => `<div class="faq"><h3>"${esc(x.q)}"</h3><p>${fill(x.a)}</p></div>`).join('')}
+</div></section>` : ''}
+
+${lfs.length ? `<section><div class="wrap">
+<span class="sec-tag">수업 진행</span>
+<h2>${esc(name)} ${subj.name} 과외, 이렇게 수업을 이끌어갑니다</h2>
+${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에서는 이렇게 합니다.</strong> ${fill(pick(x.how, sd, 52 + i))}</p></div>`).join('')}
+</div></section>` : ''}
+
+${g ? `<section><div class="wrap">
+<span class="sec-tag">시험 대비</span>
+<h2>${esc(name)} ${subj.name} 시험 4주 대비 플랜</h2>
+<div class="faq"><p style="margin-top:6px">${fill(pick(g.exam, sd, 53))}</p></div>
+</div></section>` : ''}
+
+<section><div class="wrap">
+<span class="sec-tag">다른 과목</span>
+<h2>${esc(name)} 다른 과목 내신 과외</h2>
+<div class="linkcol">
+${SUBJECTS.filter(s => s.slug !== subj.slug).map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} 내신 과외</a>`).join('')}
+${basePath ? `<a href="${basePath}/${subj.slug}">${esc(reg.dong)} ${subj.name}과외 전체 보기</a>` : ''}
+</div>
+</div></section>
+
+${ctaBlock(name)}`;
+
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld, img: `/og/${subj.slug}.png` });
+}
 
 /* ---------------- 파비콘 / 아이콘 ---------------- */
 
@@ -2269,7 +2553,10 @@ ${items.map(i => `<item><title>${i.t}</title><link>${i.u}</link><description>${i
     const schoolSm = path.match(/^\/sitemap-schools-(cho|jung|go)\.xml$/);
     if (schoolSm) {
       const kindMap = { cho: '초', jung: '중', go: '고' };
-      const urls = SCHOOLS.filter(s => s[1] === kindMap[schoolSm[1]]).map(s => `${origin}/schools/${s[4]}`);
+      const urls = SCHOOLS.filter(s => s[1] === kindMap[schoolSm[1]]).flatMap(s => [
+        `${origin}/schools/${s[4]}`,
+        ...SUBJECTS.map(sj => `${origin}/schools/${s[4]}/${sj.slug}`),
+      ]);
       urls.unshift(`${origin}/schools`);
       return xml(xmlUrlset(urls));
     }
@@ -2307,6 +2594,13 @@ ${items.map(i => `<item><title>${i.t}</title><link>${i.u}</link><description>${i
         const sc = SCHOOL_BY_SLUG.get(seg[1]);
         return sc ? html(schoolPage(sc, origin + path)) : notFound(origin);
       }
+      if (seg.length === 3) {
+        schoolIndex();
+        const sc = SCHOOL_BY_SLUG.get(seg[1]);
+        const ssubj = SUBJECT_MAP[seg[2]];
+        if (sc && ssubj) return html(schoolSubjectPage(sc, ssubj, origin + path));
+        return notFound(origin);
+      }
       return notFound(origin);
     }
 
@@ -2319,6 +2613,21 @@ ${items.map(i => `<item><title>${i.t}</title><link>${i.u}</link><description>${i
     if (!sgg) return notFound(origin);
 
     if (seg.length === 2) return html(sggHubPage({ sido, sgg, url: origin + path }));
+
+    // 지역 x 과목 x 학년: /{sido}/{sgg}/{subj}/{grade} 또는 /{sido}/{sgg}/{dong}/{subj}/{grade}
+    const gradeLast = GRADE_MAP[seg[seg.length - 1]];
+    if (gradeLast) {
+      const gsubj = SUBJECT_MAP[seg[seg.length - 2]];
+      if (gsubj && seg.length === 4) {
+        return html(regionGradeSubjectPage({ sido, sgg, dong: null, subj: gsubj, grade: gradeLast, url: origin + path }));
+      }
+      if (gsubj && seg.length === 5) {
+        const dong = getDong(sido.key, sgg.key, seg[2]);
+        if (!dong) return notFound(origin);
+        return html(regionGradeSubjectPage({ sido, sgg, dong, subj: gsubj, grade: gradeLast, url: origin + path }));
+      }
+      return notFound(origin);
+    }
 
     const subj = SUBJECT_MAP[seg[seg.length - 1]];
 
