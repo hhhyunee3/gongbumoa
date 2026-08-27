@@ -1129,9 +1129,12 @@ function subjectRow(basePath, activeSlug) {
 }
 
 function ctaBlock(where) {
+  const v = pageHash(where + '#cta') % 3;
+  const heads = [`${esc(where)} 무료 진단부터 받아보세요`, `${esc(where)} 수업, 진단 상담으로 시작하세요`, `${esc(where)} 학생 무료 상담 신청`];
+  const leads = ['아이의 현재 상태를 정확히 알려드리고, 딱 맞는 선생님을 연결해 드려요.', '지금 어디가 막혀 있는지부터 확인한 뒤, 아이에게 맞는 선생님을 찾아드립니다.', '진단 결과를 보고 시작 여부를 정하셔도 됩니다. 상담과 진단은 무료예요.'];
   return `<section><div class="wrap"><div class="cta">
-<h2>${esc(where)} 무료 진단부터 받아보세요</h2>
-<p>아이의 현재 상태를 정확히 알려드리고, 딱 맞는 선생님을 연결해 드려요.</p>
+<h2>${heads[v]}</h2>
+<p>${leads[v]}</p>
 <div class="btns"><a href="/#contact" class="btn btn-yellow">무료 상담 신청</a><a href="tel:01030388978" class="btn btn-wg">📞 010-3038-8978</a></div>
 </div></div></section>`;
 }
@@ -1160,24 +1163,24 @@ function guideBlock(subj, place, seed, extra) {
   const h = pageHash(sd);
   const fill = s => esc(String(s).split('{p}').join(place));
   // 문답: 풀에서 회전 후 4개 선택 (페이지마다 조합·순서 상이)
-  const probs = rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 4);
-  // 고민→수업 진행: 풀에서 회전 후 3개 선택 (페이지마다 조합 상이)
+  const probs = rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 5);
+  // 고민→수업 진행: 풀에서 회전 후 4개 선택 (페이지마다 조합 상이)
   const lfPool = LESSON_FLOW[subj.slug] || [];
-  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 3) : [];
+  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 4) : [];
   // 이웃 지역 리드 문장 (페이지 고유 토큰 삽입)
   const nb = extra && extra.neighbors && extra.neighbors.length
     ? `<p class="sub" style="max-width:760px">${esc(place)}뿐 아니라 인접한 ${extra.neighbors.slice(0, 3).map(esc).join(', ')} 학생들도 같은 방식으로 수업을 받고 있습니다.</p>` : '';
   return `
 <section><div class="wrap">
 <span class="sec-tag">공부법 가이드</span>
-<h2>${esc(place)} ${subj.name} 공부, 이렇게 시작하세요</h2>
+<h2>${[`${esc(place)} ${subj.name} 공부, 이렇게 시작하세요`, `${esc(place)} ${subj.name} 학년별 공부법 총정리`, `${esc(place)} 학생을 위한 ${subj.name} 공부 로드맵`][pageHash(sd + '#h2a') % 3]}</h2>
 <p class="sub" style="max-width:760px">${fill(pick(g.intro, sd, 0))}</p>
 ${g.grades.map((x, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(x.t)}</h3><p style="margin-top:6px">${fill(pick(x.b, sd, 10 + i))}</p></div>`).join('')}
 </div></section>
 
 <section><div class="wrap">
 <span class="sec-tag">자주 겪는 어려움</span>
-<h2>${subj.name} 공부에서 이런 고민 있지 않나요?</h2>
+<h2>${[`${subj.name} 공부에서 이런 고민 있지 않나요?`, `${subj.name} 때문에 자주 듣는 고민들`, `학생들이 가장 많이 묻는 ${subj.name} 고민`][pageHash(sd + '#h2b') % 3]}</h2>
 ${probs.map(x => `<div class="faq"><h3>"${esc(x.q)}"</h3><p>${fill(x.a)}</p></div>`).join('')}
 </div></section>
 
@@ -1190,7 +1193,7 @@ ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에
 
 <section><div class="wrap">
 <span class="sec-tag">학습 루틴</span>
-<h2>${subj.name} 주간 학습 루틴과 시험 대비</h2>
+<h2>${[`${subj.name} 주간 학습 루틴과 시험 대비`, `${subj.name} 성적을 만드는 루틴과 시험 플랜`, `평소 루틴부터 시험 4주까지, ${subj.name} 관리법`][pageHash(sd + '#h2c') % 3]}</h2>
 <div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${fill(pick(g.routine, sd, 3))}</p></div>
 <div class="faq"><h3>시험 4주 대비 플랜</h3><p style="margin-top:6px">${fill(pick(g.exam, sd, 4))}</p></div>
 <div class="faq" style="margin-top:14px"><h3>지금 성적대에 맞는 접근법</h3><p style="margin-top:6px">${fill(pick(g.levels, sd, 5))}</p></div>
@@ -1198,7 +1201,7 @@ ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에
 
 <section><div class="wrap">
 <span class="sec-tag">과외 활용법</span>
-<h2>${esc(place)}에서 ${subj.name} 과외로 도움받는 방법</h2>
+<h2>${[`${esc(place)}에서 ${subj.name} 과외로 도움받는 방법`, `${esc(place)} ${subj.name} 과외는 이렇게 진행됩니다`, `${esc(place)} ${subj.name} 1:1 수업 활용법`][pageHash(sd + '#h2d') % 3]}</h2>
 ${nb}
 <p class="sub" style="max-width:760px">${fill(pick(g.help, sd, 1))}</p>
 <div class="card" style="max-width:760px"><h3>💡 학부모님께 드리는 팁</h3><p style="margin-top:8px">${fill(pick(g.parent, sd, 2))}</p></div>
@@ -1225,7 +1228,7 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   const desc = `${sido.full} ${sgg.disp} ${dong ? dong.name + ' ' : ''}${subj.name}과외. `
     + `초·중·고 1:1 맞춤 수업으로 ${subj.name} 성적을 올려드립니다. 무료 진단 상담 후 선생님을 연결해 드려요.`;
 
-  const siblings = sgg.list.filter(d => !dong || d[0] !== dong.name).slice(0, 40);
+  const siblings = rotate(sgg.list.filter(d => !dong || d[0] !== dong.name), pageHash((dong ? dong.code : sido.key + sgg.key) + subj.slug + '#sibsel')).slice(0, 14);
 
   const crumbItems = [
     { name: '홈', url: '/' },
@@ -1264,15 +1267,20 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
     { q: `수강료는 어떻게 되나요?`, a: `학년, 과목, 수업 횟수, ${sgg.disp} 지역 여건에 따라 달라져 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확한 금액을 안내해 드립니다.` },
   ];
   const faqs = rotate(faqPool, ph % faqPool.length).slice(0, 4);
+  const acadV = pageHash(String(seedKey) + subj.slug + '#acad') % 3;
   faqs.push({
-    q: `${place}에서 ${subj.name} 학원과 과외 중 고민된다면?`,
-    a: `학원은 정해진 진도와 경쟁 자극이, 과외는 우리 아이 속도에 맞춘 1:1 맞춤이 강점입니다. 무료 진단 상담에서 아이 성향과 현재 상태를 보고 과외 단독이 나을지, 학원 병행이 나을지 객관적으로 안내해 드립니다.${subj.slug === 'english' ? ' 영어회화·원어민 회화 수업 문의도 함께 가능합니다.' : ' 필요하면 영어회화 등 다른 수업도 함께 안내해 드립니다.'}`,
+    q: [`${place}에서 ${subj.name} 학원과 과외 중 고민된다면?`, `${place} ${subj.name} 학원이 나을까요, 과외가 나을까요?`, `학원에 다니는데 ${subj.name} 과외를 병행해도 되나요?`][acadV],
+    a: [
+      `학원은 정해진 진도와 경쟁 자극이, 과외는 우리 아이 속도에 맞춘 1:1 맞춤이 강점입니다. 무료 진단 상담에서 아이 성향과 현재 상태를 보고 과외 단독이 나을지, 학원 병행이 나을지 객관적으로 안내해 드립니다.`,
+      `정답은 아이 상태에 따라 다릅니다. 개념 구멍이 있거나 질문을 어려워하는 아이는 1:1 과외가, 경쟁 자극이 필요한 상위권은 학원 병행이 맞을 수 있습니다. 진단 상담에서 우리 아이에게 맞는 조합을 안내해 드립니다.`,
+      `가능합니다. 학원 진도를 따라가기 벅차거나 질문이 쌓여 있다면, 과외가 학원 수업을 소화하는 보조 엔진 역할을 합니다. 일정이 겹치지 않게 조율해 드리니 상담에서 학원 시간표를 알려주세요.`,
+    ][acadV] + (subj.slug === 'english' ? ' 영어회화·원어민 회화 수업 문의도 함께 가능합니다.' : ' 필요하면 영어회화 등 다른 수업도 함께 안내해 드립니다.'),
   });
   // 이 지역(시군구) 실제 학교 목록 — 페이지 고유 데이터
   schoolIndex();
   const sggCode5 = sgg.list[0][1].slice(0, 5);
   const sggSchools = SCHOOLS.filter(s => s[2].startsWith(sggCode5));
-  const nearSchools = rotate(sggSchools, pageHash(seedKey + subj.slug + '#sch')).slice(0, 18);
+  const nearSchools = rotate(sggSchools, pageHash(seedKey + subj.slug + '#sch')).slice(0, 12);
   const gd = GUIDES[subj.slug];
   const fillT = s => s.split('{p}').join(place);
   const faqLd = {
@@ -1329,19 +1337,27 @@ ${photoTag(seedKey + subj.slug, `${place} ${subj.name} 공부하는 학생`)}
 <div class="step"><div class="n">1</div><h3>무료 진단</h3><p>${pick([
   `첫 수업 전 ${subj.name} 취약 단원을 정확히 파악합니다.`,
   `${subj.name} 개념의 구멍이 어디인지부터 찾아냅니다.`,
-  `현재 실력과 막힌 지점을 테스트로 확인합니다.`], seedKey + subj.slug, 21)}</p></div>
+  `현재 실력과 막힌 지점을 테스트로 확인합니다.`,
+  `어디서부터 이해가 끊겼는지 진단으로 찾아드립니다.`,
+  `${subj.name} 실력을 단원별로 나눠 점검합니다.`], seedKey + subj.slug, 21)}</p></div>
 <div class="step"><div class="n">2</div><h3>선생님 매칭</h3><p>${pick([
   `${esc(place)} 인근에서 성향이 맞는 선생님을 연결해요.`,
   `진단 결과에 맞는 ${esc(place)} 지역 선생님을 배정합니다.`,
-  `아이 성향과 목표에 맞춰 선생님을 골라 연결합니다.`], seedKey + subj.slug, 22)}</p></div>
+  `아이 성향과 목표에 맞춰 선생님을 골라 연결합니다.`,
+  `${esc(place)} 지역 방문·화상 가능한 선생님을 찾아드려요.`,
+  `학교와 학년 경험이 맞는 선생님을 우선 배정합니다.`], seedKey + subj.slug, 22)}</p></div>
 <div class="step"><div class="n">3</div><h3>맞춤 수업</h3><p>${pick([
   `학교 진도와 시험 범위에 맞춰 커리큘럼을 짭니다.`,
   `우리 학교 시험 스타일 기준으로 수업을 설계합니다.`,
-  `진도 관리와 약점 보충을 병행하는 수업을 합니다.`], seedKey + subj.slug, 23)}</p></div>
+  `진도 관리와 약점 보충을 병행하는 수업을 합니다.`,
+  `내신 일정에 맞춰 시험 4주 플랜을 함께 돌립니다.`,
+  `아이 속도에 맞춰 수업 난도와 분량을 조절합니다.`], seedKey + subj.slug, 23)}</p></div>
 <div class="step"><div class="n">4</div><h3>리포트</h3><p>${pick([
   `매주 학습 내용과 성장 과정을 공유해 드려요.`,
   `주간 리포트로 진도와 성취도를 알려드립니다.`,
-  `수업 내용과 다음 계획을 정기적으로 전달해 드려요.`], seedKey + subj.slug, 24)}</p></div>
+  `수업 내용과 다음 계획을 정기적으로 전달해 드려요.`,
+  `숙제 수행과 오답 관리 현황까지 투명하게 공유합니다.`,
+  `4주마다 성취도를 점검해 커리큘럼을 조정합니다.`], seedKey + subj.slug, 24)}</p></div>
 </div>
 </div></section>
 
@@ -1385,7 +1401,7 @@ ${faqBlock(faqs)}
 
 ${ctaBlock(place)}`;
 
-  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, howToLd, crumbLd], img: `/og/${subj.slug}.png` });
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, howToLd, crumbLd], img: photoUrl(seedKey + subj.slug) });
 }
 
 /* ---------------- 페이지: 지역 x 과목 x 학년 ---------------- */
@@ -1404,9 +1420,26 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   const g = GUIDES[subj.slug];
   const fill = s => esc(String(s).split('{p}').join(place));
   const gradeGuide = g && g.grades[grade.gi] ? g.grades[grade.gi] : null;
-  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 3) : [];
+  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 4) : [];
   const lfPool = LESSON_FLOW[subj.slug] || [];
   const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 3) : [];
+  const gradeFaqPool = [
+    { q: `${grade.name} ${subj.name} 과외는 주 몇 회가 적당한가요?`, a: `${grade.name}은 주 1~2회, 회당 90~120분이 일반적입니다. ${place} 학생의 현재 실력과 목표, 다른 일정에 따라 조정하며, 시험 기간에는 횟수를 늘리는 것도 가능합니다.` },
+    { q: `${grade.name}인데 ${subj.name} 기초가 많이 부족해도 되나요?`, a: `오히려 1:1 과외가 가장 효과적인 경우입니다. 진단으로 어느 지점부터 이해가 끊겼는지 찾아, 이전 과정까지 내려가 다시 쌓아 올립니다. 학원처럼 정해진 진도에 끌려가지 않는 것이 과외의 장점입니다.` },
+    { q: `${place}에서 ${grade.name} 학생 방문 수업이 가능한가요?`, a: `네, ${place} 전 지역 방문 수업과 화상 수업 모두 가능합니다. ${grade.name} 학생의 집중력과 일정에 맞춰 상담에서 함께 정하시면 됩니다.` },
+    { q: `${grade.name} ${subj.name} 학원과 과외 중 뭐가 나을까요?`, a: `아이 상태에 따라 다릅니다. 개념 구멍이 있거나 질문을 어려워하면 과외가, 경쟁 자극이 필요하면 학원 병행이 맞을 수 있습니다. 무료 진단에서 객관적으로 안내해 드리며, 영어회화 등 다른 수업 문의도 가능합니다.` },
+    { q: `선생님은 어떻게 배정되나요?`, a: `진단 결과와 ${grade.name} 학생 성향, ${place} 지역 일정을 종합해 배정합니다. 수업 초반에 맞지 않는다고 느끼시면 부담 없이 재매칭을 요청하실 수 있습니다.` },
+    { q: `수강료는 어떻게 되나요?`, a: `학년, 과목, 수업 횟수와 지역 여건에 따라 달라 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확한 금액을 안내해 드립니다.` },
+  ];
+  gradeFaqPool.push(
+    { q: `${grade.name} ${subj.name} 숙제는 얼마나 나오나요?`, a: `수업에서 혼자 성공한 유형 위주로, ${grade.name} 학생이 소화할 수 있는 분량을 냅니다. 숙제 수행 여부는 리포트로 공유되며, 습관이 잡히지 않은 학생은 분량 조절부터 시작합니다.` },
+    { q: `${grade.name} 형제·자매와 함께 수업할 수 있나요?`, a: `학년과 진도가 비슷하면 함께 수업이 가능하고, 다르면 시간대를 이어 배정해 이동 부담을 줄여드립니다. 상담 시 말씀해 주세요.` },
+  );
+  const gradeFaqs = rotate(gradeFaqPool, pageHash(sd + '#gfaq') % gradeFaqPool.length).slice(0, 6);
+  const gSiblings = rotate(sgg.list.filter(d => !dong || d[0] !== dong.name), pageHash(sd + '#gsib')).slice(0, 10);
+  schoolIndex();
+  const gSggCode5 = sgg.list[0][1].slice(0, 5);
+  const gSchools = rotate(SCHOOLS.filter(s => s[2].startsWith(gSggCode5) && s[1] === grade.kind), pageHash(sd + '#gsch')).slice(0, 10);
 
   const crumbItems = [
     { name: '홈', url: '/' },
@@ -1430,6 +1463,7 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
     mainEntity: [
       ...probs.map(p2 => ({ '@type': 'Question', name: `${grade.name} ${subj.name}: ${p2.q}`, acceptedAnswer: { '@type': 'Answer', text: String(p2.a).split('{p}').join(place) } })),
       ...lfs.map(x => ({ '@type': 'Question', name: `${x.q} — ${grade.name} ${subj.name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(place) } })),
+      ...gradeFaqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
     ],
   };
   const crumbLd = {
@@ -1447,13 +1481,31 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   `${esc(place)}에서 ${grade.name} ${subj.name} 선생님을 찾고 계신가요? 학원과 과외 중 무엇이 맞을지부터 무료 상담에서 함께 판단해 드립니다.`,
 ], sd, 40)}</p>
 <div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${subjPath}" class="btn btn-ghost">${esc(place)} ${subj.name}과외 전체</a></div>
+<div class="stat-row">
+<div class="stat"><div class="n">${grade.name}</div><div class="l">전문 커리큘럼</div></div>
+<div class="stat"><div class="n">1:1</div><div class="l">맞춤 수업</div></div>
+<div class="stat"><div class="n">무료</div><div class="l">진단 상담</div></div>
+</div>
 </div></section>
 
 ${photoTag(sd, `${place} ${grade.name} ${subj.name} 공부하는 학생`)}
 
+<section><div class="wrap">
+<span class="sec-tag">수업 방식</span>
+<h2>${esc(place)} ${grade.name} ${subj.name}, 이렇게 수업해요</h2>
+<div class="grid g4">
+<div class="step"><div class="n">1</div><h3>무료 진단</h3><p>${pick([`${grade.name} 과정 기준으로 ${subj.name} 취약 단원을 파악합니다.`, `어디서부터 이해가 끊겼는지 진단으로 찾아냅니다.`, `${subj.name} 실력을 단원별로 나눠 점검합니다.`], sd, 90)}</p></div>
+<div class="step"><div class="n">2</div><h3>선생님 매칭</h3><p>${pick([`${grade.name} 지도 경험이 있는 ${esc(place)} 선생님을 연결해요.`, `진단 결과와 아이 성향에 맞는 선생님을 배정합니다.`, `${esc(place)} 지역 방문·화상 가능한 선생님을 찾아드려요.`], sd, 91)}</p></div>
+<div class="step"><div class="n">3</div><h3>맞춤 수업</h3><p>${pick([`${grade.name} 교과와 학교 진도에 맞춰 커리큘럼을 짭니다.`, `진도 관리와 약점 보충을 병행하는 수업을 합니다.`, `아이 속도에 맞춰 수업 난도와 분량을 조절합니다.`], sd, 92)}</p></div>
+<div class="step"><div class="n">4</div><h3>리포트</h3><p>${pick([`매주 학습 내용과 성장 과정을 공유해 드려요.`, `주간 리포트로 진도와 성취도를 알려드립니다.`, `4주마다 성취도를 점검해 커리큘럼을 조정합니다.`], sd, 93)}</p></div>
+</div>
+</div></section>
+
 ${gradeGuide ? `<section><div class="wrap">
 <span class="sec-tag">${grade.name} 공부법</span>
 <h2>${esc(place)} ${grade.name} ${subj.name}, 지금 이렇게 공부해야 합니다</h2>
+${gSiblings.length ? `<p class="sub" style="max-width:760px">${esc(place)}뿐 아니라 인접한 ${gSiblings.slice(0, 3).map(d => esc(d[0])).join(', ')}의 ${grade.name} 학생들도 같은 방식으로 수업을 받고 있습니다.</p>` : ''}
+${g ? `<p class="sub" style="max-width:760px">${fill(pick(g.intro, sd, 94))}</p>` : ''}
 <div class="faq"><h3>${esc(gradeGuide.t)}</h3><p style="margin-top:6px">${fill(pick(gradeGuide.b, sd, 41))}</p></div>
 </div></section>` : ''}
 
@@ -1469,12 +1521,38 @@ ${lfs.length ? `<section><div class="wrap">
 ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에서는 이렇게 합니다.</strong> ${fill(pick(x.how, sd, 42 + i))}</p></div>`).join('')}
 </div></section>` : ''}
 
+${(() => {
+  const sgd = SCHOOL_GUIDE[grade.kind];
+  if (!sgd) return '';
+  const sgSel = sgd[pageHash(sd + '#sg') % sgd.length];
+  return `<section><div class="wrap">
+<span class="sec-tag">${grade.name} 내신 관리</span>
+<h2>${esc(place)} ${grade.name} 학생의 학교 공부 관리법</h2>
+<div class="faq"><h3>${esc(sgSel[0])}</h3><p style="margin-top:6px">${esc(pick(sgSel[1], sd, 99))}</p></div>
+</div></section>`;
+})()}
+
 ${g ? `<section><div class="wrap">
 <span class="sec-tag">학습 루틴</span>
 <h2>${grade.name} ${subj.name} 주간 루틴과 시험 대비</h2>
 <div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${fill(pick(g.routine, sd, 43))}</p></div>
 <div class="faq"><h3>시험 4주 대비 플랜</h3><p style="margin-top:6px">${fill(pick(g.exam, sd, 44))}</p></div>
 </div></section>` : ''}
+
+${g ? `<section><div class="wrap">
+<span class="sec-tag">성적대별</span>
+<h2>${esc(place)} ${grade.name} ${subj.name}, 지금 성적대에 맞는 접근법</h2>
+<div class="faq"><p style="margin-top:6px">${fill(pick(g.levels, sd, 45))}</p></div>
+</div></section>` : ''}
+
+${g ? `<section><div class="wrap">
+<span class="sec-tag">과외 활용법</span>
+<h2>${[`${esc(place)} ${grade.name} ${subj.name} 과외로 도움받는 방법`, `${esc(place)} ${grade.name} ${subj.name} 과외는 이렇게 진행됩니다`][pageHash(sd + '#h2e') % 2]}</h2>
+<p class="sub" style="max-width:760px">${fill(pick(g.help, sd, 46))}</p>
+<div class="card" style="max-width:760px"><h3>💡 ${grade.name} 학부모님께 드리는 팁</h3><p style="margin-top:8px">${fill(pick(g.parent, sd, 47))}</p></div>
+</div></section>` : ''}
+
+${faqBlock(gradeFaqs)}
 
 <section><div class="wrap">
 <span class="sec-tag">다른 학년</span>
@@ -1493,9 +1571,25 @@ ${SUBJECTS.filter(s => s.slug !== subj.slug).map(s => `<a href="${basePath}/${s.
 </div>
 </div></section>
 
+${gSiblings.length ? `<section><div class="wrap">
+<span class="sec-tag">주변 지역</span>
+<h2>${esc(sgg.disp)} 다른 지역 ${grade.name} ${subj.name}과외</h2>
+<div class="linkcol">
+${gSiblings.map(d => `<a href="${parentPath}/${d[3]}/${subj.slug}/${grade.slug}">${esc(d[0])} ${grade.name} ${subj.name}과외</a>`).join('')}
+</div>
+</div></section>` : ''}
+
+${gSchools.length ? `<section><div class="wrap">
+<span class="sec-tag">인근 학교</span>
+<h2>${esc(sgg.disp)} ${grade.name === '초등' ? '초등학교' : grade.name === '중등' ? '중학교' : '고등학교'} ${subj.name} 내신</h2>
+<div class="linkcol">
+${gSchools.map(s => `<a href="/schools/${s[4]}/${subj.slug}">${esc(s[0])} ${subj.name} 내신</a>`).join('')}
+</div>
+</div></section>` : ''}
+
 ${ctaBlock(`${place} ${grade.name}`)}`;
 
-  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, crumbLd], img: `/og/${subj.slug}.png` });
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld: [jsonld, faqLd, crumbLd], img: photoUrl(sd) });
 }
 
 /* ---------------- 페이지: 시군구 허브 ---------------- */
@@ -1526,6 +1620,33 @@ ${subjectRow(base)}
 ${sgg.list.map(d => `<a href="${base}/${d[3]}/math">${esc(d[0])} 과외</a>`).join('')}
 </div>
 </div></section>
+
+${(() => {
+  const hsd = sido.key + sgg.key + '#hub';
+  const picked = rotate(SUBJECTS, pageHash(hsd) % SUBJECTS.length).slice(0, 3);
+  const hFill = s => esc(String(s).split('{p}').join(sgg.disp));
+  return picked.map((sj, pi) => {
+    const hg = GUIDES[sj.slug];
+    if (!hg) return '';
+    const gsel = rotate(hg.grades, pageHash(hsd + sj.slug) % hg.grades.length).slice(0, 2);
+    return `<section><div class="wrap">
+<span class="sec-tag">교육정보</span>
+<h2>${esc(sgg.disp)} ${sj.name} 공부, 이렇게 시작하세요</h2>
+<p class="sub" style="max-width:760px">${hFill(pick(hg.intro, hsd + sj.slug, 80 + pi))}</p>
+${gsel.map((x, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(x.t)}</h3><p style="margin-top:6px">${hFill(pick(x.b, hsd + sj.slug, 82 + i))}</p></div>`).join('')}
+${rotate(hg.problems, pageHash(hsd + sj.slug + '#p')).slice(0, 3).map(px => `<div class="faq" style="margin-bottom:14px"><h3>"${esc(px.q)}"</h3><p>${hFill(px.a)}</p></div>`).join('')}
+<div class="card" style="max-width:760px"><h3>💡 학부모님께 드리는 팁</h3><p style="margin-top:8px">${hFill(pick(hg.parent, hsd + sj.slug, 85 + pi))}</p></div>
+</div></section>`;
+  }).join('');
+})()}
+
+${faqBlock(rotate([
+  { q: `${sgg.disp}에서는 어떤 과목 수업이 가능한가요?`, a: `수학, 영어, 국어, 과학, 사회, 논술 전 과목이 가능합니다. 여러 과목을 함께 신청하면 일정을 맞춰 배정해 드리고, 영어회화 등 다른 수업 문의도 가능합니다.` },
+  { q: `${sgg.disp} 전 지역 방문 수업이 되나요?`, a: `네, ${sgg.disp} ${sgg.list.length}개 지역 모두 방문 수업과 화상 수업이 가능합니다. 지역과 일정에 맞춰 선생님을 배정해 드려요.` },
+  { q: `학원과 과외 중 무엇이 나을까요?`, a: `개념 구멍이 있거나 질문을 어려워하는 학생은 1:1 과외가, 경쟁 자극이 필요한 상위권은 학원 병행이 맞을 수 있습니다. 무료 진단에서 객관적으로 안내해 드립니다.` },
+  { q: `상담 후 꼭 시작해야 하나요?`, a: `아닙니다. 무료 진단 상담으로 아이의 현재 상태를 먼저 확인하시고, 결과를 보고 시작 여부를 편하게 결정하시면 됩니다.` },
+  { q: `수강료는 어떻게 되나요?`, a: `학년, 과목, 수업 횟수와 ${sgg.disp} 지역 여건에 따라 달라 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확히 안내해 드립니다.` },
+], pageHash(sido.key + sgg.key + '#hfaq') % 5).slice(0, 5))}
 
 ${ctaBlock(sgg.disp)}`;
 
@@ -1564,6 +1685,33 @@ function sidoHubPage({ sido, url }) {
 ${sggs.map(([k, v]) => `<a href="/${U(sido.key)}/${U(k)}">${esc(v.d)} 과외</a>`).join('')}
 </div>
 </div></section>
+
+${(() => {
+  const hsd = sido.key + '#sidohub';
+  const picked = rotate(SUBJECTS, pageHash(hsd) % SUBJECTS.length).slice(0, 3);
+  const hFill = s => esc(String(s).split('{p}').join(sido.full));
+  return picked.map((sj, pi) => {
+    const hg = GUIDES[sj.slug];
+    if (!hg) return '';
+    const gsel = rotate(hg.grades, pageHash(hsd + sj.slug) % hg.grades.length).slice(0, 2);
+    return `<section><div class="wrap">
+<span class="sec-tag">교육정보</span>
+<h2>${esc(sido.full)} ${sj.name} 공부법 안내</h2>
+<p class="sub" style="max-width:760px">${hFill(pick(hg.intro, hsd + sj.slug, 86 + pi))}</p>
+${gsel.map((x, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(x.t)}</h3><p style="margin-top:6px">${hFill(pick(x.b, hsd + sj.slug, 88 + i))}</p></div>`).join('')}
+${rotate(hg.problems, pageHash(hsd + sj.slug + '#p')).slice(0, 3).map(px => `<div class="faq" style="margin-bottom:14px"><h3>"${esc(px.q)}"</h3><p>${hFill(px.a)}</p></div>`).join('')}
+<div class="card" style="max-width:760px"><h3>💡 학부모님께 드리는 팁</h3><p style="margin-top:8px">${hFill(pick(hg.parent, hsd + sj.slug, 89 + pi))}</p></div>
+</div></section>`;
+  }).join('');
+})()}
+
+${faqBlock([
+  { q: `${sido.full} 전 지역에서 수업이 가능한가요?`, a: `네, ${sido.full} ${sggs.length}개 시군구 전 지역에서 방문 수업 또는 화상 수업이 가능합니다. 지역과 일정에 맞춰 선생님을 배정해 드려요.` },
+  { q: `어떤 과목 수업이 가능한가요?`, a: `수학, 영어, 국어, 과학, 사회, 논술 전 과목이 가능하고, 영어회화 등 다른 수업 문의도 가능합니다. 학원 병행 여부까지 상담에서 함께 안내해 드립니다.` },
+  { q: `상담 후 꼭 시작해야 하나요?`, a: `아닙니다. 무료 진단 상담으로 아이의 현재 상태를 먼저 확인하시고, 결과를 보고 시작 여부를 편하게 결정하시면 됩니다.` },
+  { q: `선생님이 마음에 들지 않으면 어떻게 하나요?`, a: `수업 초반에 맞지 않는다고 느끼시면 다른 선생님으로 다시 매칭해 드립니다. 부담 없이 말씀해 주세요.` },
+  { q: `수강료는 어떻게 되나요?`, a: `학년, 과목, 수업 횟수와 지역 여건에 따라 달라 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확한 금액을 안내해 드립니다.` },
+])}
 
 ${ctaBlock(sido.full)}`;
 
@@ -1673,7 +1821,30 @@ function subjectNationalPage(subj, url) {
 </div></section>
 ${photoTag('subject-' + subj.slug, `${subj.name} 공부`)}
 
+<section><div class="wrap">
+<span class="sec-tag">수업 방식</span>
+<h2>${subj.name}과외, 이렇게 수업해요</h2>
+<div class="grid g4">
+<div class="step"><div class="n">1</div><h3>무료 진단</h3><p>첫 수업 전 ${subj.name} 취약 단원과 학습 성향을 정확히 파악합니다.</p></div>
+<div class="step"><div class="n">2</div><h3>선생님 매칭</h3><p>진단 결과와 아이 성향, 지역 일정에 맞는 선생님을 연결합니다.</p></div>
+<div class="step"><div class="n">3</div><h3>맞춤 수업</h3><p>학교 진도와 시험 범위 기준으로 커리큘럼을 설계하고 약점을 보충합니다.</p></div>
+<div class="step"><div class="n">4</div><h3>리포트</h3><p>매주 학습 내용과 성취도, 다음 계획을 학부모님께 공유합니다.</p></div>
+</div>
+</div></section>
+
 ${guideBlock(subj, '전국', 'national', null)}
+
+${(() => {
+  const ng = GUIDES[subj.slug];
+  if (!ng) return '';
+  const extra = rotate(ng.problems, pageHash('national' + subj.slug + '#probs') % ng.problems.length).slice(5);
+  if (!extra.length) return '';
+  return `<section><div class="wrap">
+<span class="sec-tag">더 많은 고민</span>
+<h2>${subj.name} 공부, 이런 고민도 자주 받아요</h2>
+${extra.map(px => `<div class="faq"><h3>"${esc(px.q)}"</h3><p>${esc(String(px.a).split('{p}').join('전국'))}</p></div>`).join('')}
+</div></section>`;
+})()}
 
 <section><div class="wrap">
 <span class="sec-tag">지역별</span><h2>지역별 ${subj.name}과외</h2>
@@ -1682,6 +1853,16 @@ ${guideBlock(subj, '전국', 'national', null)}
 ${entries.map(([k, v]) => `<a href="/${U(k)}">${esc(v.full)} ${subj.name}과외</a>`).join('')}
 </div>
 </div></section>
+
+${faqBlock([
+  { q: `${subj.name} 과외는 몇 학년부터 받을 수 있나요?`, a: `초등학생부터 고등학생까지 모두 가능합니다. 학년과 현재 실력에 따라 커리큘럼을 다르게 구성하며, 무료 진단으로 출발점을 정합니다.` },
+  { q: `${subj.name} 학원과 과외 중 무엇이 나을까요?`, a: `개념 구멍이 있거나 질문을 어려워하는 학생은 1:1 과외가, 경쟁 자극이 필요한 상위권은 학원 병행이 맞을 수 있습니다. 진단 상담에서 객관적으로 안내해 드리며, 영어회화 등 다른 수업 문의도 가능합니다.` },
+  { q: `방문 수업과 화상 수업 중 선택할 수 있나요?`, a: `네, 전국 어디서나 방문 수업(지역에 따라 상이)과 화상 수업 모두 가능합니다. 학생 일정과 성향에 맞춰 상담에서 정하시면 됩니다.` },
+  { q: `수강료는 어떻게 되나요?`, a: `학년, 수업 횟수, 지역 여건에 따라 달라 일률적으로 안내드리기 어렵습니다. 무료 상담에서 조건 확인 후 정확한 금액을 안내해 드립니다.` },
+  { q: `선생님이 마음에 들지 않으면 어떻게 하나요?`, a: `수업 초반에 맞지 않는다고 느끼시면 다른 선생님으로 다시 매칭해 드립니다. 부담 없이 말씀해 주세요.` },
+  { q: `${subj.name} 시험 기간에만 수업받을 수도 있나요?`, a: `가능합니다. 다만 시험 4주 전부터 시작해야 범위 정리부터 오답 관리까지 온전한 사이클을 돌 수 있어 효과가 큽니다.` },
+])}
+
 ${ctaBlock(`${subj.name} 과외`)}`;
   return page({
     title: `${subj.name}과외 | 초·중·고 1:1 맞춤 - ${SITE.name}`,
@@ -2034,7 +2215,7 @@ function schoolPage(sc, url) {
   const desc = `${region} ${name} 학생을 위한 내신 맞춤 1:1 과외. 학교 출제 스타일에 맞춘 시험 대비와 수행평가 관리까지, 무료 진단 후 선생님을 연결해 드립니다.`;
 
   // 같은 지역(시군구) 다른 학교
-  const near = rotate(SCHOOLS.filter(s => s[3] === region && s[4] !== slug), pageHash(code + slug + '#near')).slice(0, 30);
+  const near = rotate(SCHOOLS.filter(s => s[3] === region && s[4] !== slug), pageHash(code + slug + '#near')).slice(0, 16);
   // 지역 과외 링크
   const basePath = reg ? `/${reg.sido}/${reg.sgg}/${reg.dongSlug}` : null;
 
@@ -2155,7 +2336,7 @@ ${SUBJECTS.map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name}
 
 ${ctaBlock(name)}`;
 
-  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld , img: '/og/school.png' });
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld , img: photoUrl(sdk) });
 }
 
 
@@ -2173,10 +2354,20 @@ function schoolSubjectPage(sc, subj, url) {
   const g = GUIDES[subj.slug];
   const fill = s => esc(String(s).split('{p}').join(name + ' 인근'));
   const gradeGuide = g && grade && g.grades[grade.gi] ? g.grades[grade.gi] : null;
-  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 3) : [];
+  const probs = g ? rotate(g.problems, pageHash(sd + '#probs') % g.problems.length).slice(0, 4) : [];
   const lfPool = LESSON_FLOW[subj.slug] || [];
-  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 2) : [];
+  const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 3) : [];
   const basePath = reg ? `/${reg.sido}/${reg.sgg}/${reg.dongSlug}` : null;
+  const nearSame = rotate(SCHOOLS.filter(s2 => s2[3] === region && s2[4] !== slug && s2[1] === kind), pageHash(sd + '#near')).slice(0, 12);
+  const ssFaqPool = [
+    { q: `${name} ${subj.name} 시험 스타일에 맞춰 수업하나요?`, a: `네. 학생이 가진 ${name} 기출과 프린트, 최근 출제 경향을 분석해 ${subj.name} 대비 방향을 정합니다. 같은 학교 수업 경험이 있는 선생님이 있으면 우선 매칭해 드립니다.` },
+    { q: `${subj.name} 내신과 수행평가를 같이 봐주시나요?`, a: `함께 관리합니다. ${name}의 ${subj.name} 수행 일정에 맞춰 제출물·서술형 과제를 준비하고, 지필 시험은 4주 플랜으로 대비합니다.` },
+    { q: `${name} 학생인데 ${subj.name} 기초가 부족해요. 가능한가요?`, a: `가능합니다. 진단으로 어느 단원부터 끊겼는지 찾아 이전 과정 보충과 학교 진도 대비를 병행합니다. 기초가 흔들릴수록 1:1 수업의 효과가 큽니다.` },
+    { q: `${subj.name} 학원에 다니는데 과외를 병행해도 되나요?`, a: `학원 진도를 소화하기 벅차거나 질문이 쌓여 있다면 병행이 효과적입니다. ${name} 일정과 학원 시간표에 맞춰 조율해 드리니 상담에서 알려주세요.` },
+    { q: `방문과 화상 중 선택할 수 있나요?`, a: `네, ${region} 지역 방문 수업과 화상 수업 모두 가능합니다. 학생 일정과 성향에 맞춰 정하시면 됩니다.` },
+    { q: `시험 기간에만 ${subj.name} 수업을 받을 수도 있나요?`, a: `가능합니다. 다만 ${name} 시험 4주 전부터 시작해야 범위 정리부터 오답 관리까지 온전한 사이클을 돌 수 있어 효과가 큽니다.` },
+  ];
+  const ssFaqs = rotate(ssFaqPool, pageHash(sd + '#sfaq') % ssFaqPool.length).slice(0, 6);
 
   const crumbItems = [
     { name: '홈', url: '/' },
@@ -2195,6 +2386,7 @@ function schoolSubjectPage(sc, subj, url) {
     mainEntity: [
       ...probs.map(p2 => ({ '@type': 'Question', name: `${name} ${subj.name}: ${p2.q}`, acceptedAnswer: { '@type': 'Answer', text: String(p2.a).split('{p}').join(name + ' 인근') } })),
       ...lfs.map(x => ({ '@type': 'Question', name: `${x.q} — ${name} ${subj.name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(name + ' 인근') } })),
+      ...ssFaqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
     ],
   }, {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -2211,14 +2403,32 @@ function schoolSubjectPage(sc, subj, url) {
   `${esc(name)} ${subj.name} 내신, 범위만 보는 공부로는 부족합니다. 학교 기출 스타일 분석부터 서술형 대비까지, 우리 학교 기준으로 준비합니다.`,
 ], sd, 50)}</p>
 <div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="/schools/${slug}" class="btn btn-ghost">${esc(name)} 전체 안내</a></div>
+<div class="stat-row">
+<div class="stat"><div class="n">${esc(kindLabel)}</div><div class="l">학교급 맞춤</div></div>
+<div class="stat"><div class="n">1:1</div><div class="l">학교 맞춤 수업</div></div>
+<div class="stat"><div class="n">무료</div><div class="l">진단 상담</div></div>
+</div>
 </div></section>
 
 ${photoTag(sd, `${name} ${subj.name} 공부하는 학생`)}
 
+<section><div class="wrap">
+<span class="sec-tag">수업 방식</span>
+<h2>${esc(name)} ${subj.name} 내신, 이렇게 수업해요</h2>
+<div class="grid g4">
+<div class="step"><div class="n">1</div><h3>무료 진단</h3><p>${pick([`${subj.name} 취약 단원과 학교 진도 대비 상태를 파악합니다.`, `어디서부터 이해가 끊겼는지 진단으로 찾아냅니다.`, `${subj.name} 실력을 단원별로 나눠 점검합니다.`], sd, 95)}</p></div>
+<div class="step"><div class="n">2</div><h3>선생님 매칭</h3><p>${pick([`${esc(name)} 또는 인근 학교 수업 경험자를 우선 연결합니다.`, `진단 결과와 아이 성향에 맞는 선생님을 배정합니다.`, `${esc(region)} 방문·화상 가능한 선생님을 찾아드려요.`], sd, 96)}</p></div>
+<div class="step"><div class="n">3</div><h3>맞춤 수업</h3><p>${pick([`${esc(name)} 진도와 시험 범위 기준으로 커리큘럼을 짭니다.`, `학교 기출 스타일에 맞춰 수업을 설계합니다.`, `진도 관리와 약점 보충을 병행하는 수업을 합니다.`], sd, 97)}</p></div>
+<div class="step"><div class="n">4</div><h3>리포트</h3><p>${pick([`매주 학습 내용과 성장 과정을 공유해 드려요.`, `주간 리포트로 진도와 성취도를 알려드립니다.`, `4주마다 성취도를 점검해 커리큘럼을 조정합니다.`], sd, 98)}</p></div>
+</div>
+</div></section>
+
 ${gradeGuide ? `<section><div class="wrap">
 <span class="sec-tag">${esc(kindLabel)} ${subj.name} 공부법</span>
 <h2>${esc(name)} 학생을 위한 ${subj.name} 공부 방향</h2>
+${g ? `<p class="sub" style="max-width:760px">${fill(pick(g.intro, sd, 57))}</p>` : ''}
 <div class="faq"><h3>${esc(gradeGuide.t)}</h3><p style="margin-top:6px">${fill(pick(gradeGuide.b, sd, 51))}</p></div>
+${g ? `<div class="card" style="max-width:760px;margin-top:14px"><h3>${esc(name)} ${subj.name} 과외 활용법</h3><p style="margin-top:8px">${fill(pick(g.help, sd, 58))}</p></div>` : ''}
 </div></section>` : ''}
 
 ${probs.length ? `<section><div class="wrap">
@@ -2235,8 +2445,32 @@ ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에
 
 ${g ? `<section><div class="wrap">
 <span class="sec-tag">시험 대비</span>
-<h2>${esc(name)} ${subj.name} 시험 4주 대비 플랜</h2>
-<div class="faq"><p style="margin-top:6px">${fill(pick(g.exam, sd, 53))}</p></div>
+<h2>${esc(name)} ${subj.name} 시험 대비와 학습 루틴</h2>
+<div class="faq" style="margin-bottom:14px"><h3>시험 4주 플랜</h3><p style="margin-top:6px">${fill(pick(g.exam, sd, 53))}</p></div>
+<div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${fill(pick(g.routine, sd, 54))}</p></div>
+<div class="faq"><h3>지금 성적대에 맞는 접근법</h3><p style="margin-top:6px">${fill(pick(g.levels, sd, 55))}</p></div>
+<div class="card" style="max-width:760px;margin-top:14px"><h3>💡 학부모님께 드리는 팁</h3><p style="margin-top:8px">${fill(pick(g.parent, sd, 56))}</p></div>
+</div></section>` : ''}
+
+${(() => {
+  const sgd = SCHOOL_GUIDE[kind];
+  if (!sgd) return '';
+  const sgSels = rotate(sgd, pageHash(sd + '#sg2')).slice(0, 2);
+  return `<section><div class="wrap">
+<span class="sec-tag">${esc(kindLabel)} 내신 관리</span>
+<h2>${esc(name)} 학생의 학교 공부 관리법</h2>
+${sgSels.map((x, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(x[0])}</h3><p style="margin-top:6px">${esc(pick(x[1], sd, 100 + i))}</p></div>`).join('')}
+</div></section>`;
+})()}
+
+${faqBlock(ssFaqs)}
+
+${nearSame.length ? `<section><div class="wrap">
+<span class="sec-tag">주변 학교</span>
+<h2>${esc(region)} 다른 ${esc(kindLabel)} ${subj.name} 내신</h2>
+<div class="linkcol">
+${nearSame.map(s2 => `<a href="/schools/${s2[4]}/${subj.slug}">${esc(s2[0])} ${subj.name} 내신</a>`).join('')}
+</div>
 </div></section>` : ''}
 
 <section><div class="wrap">
@@ -2250,7 +2484,7 @@ ${basePath ? `<a href="${basePath}/${subj.slug}">${esc(reg.dong)} ${subj.name}�
 
 ${ctaBlock(name)}`;
 
-  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld, img: `/og/${subj.slug}.png` });
+  return page({ title, desc, canonical: url, crumb: crumbs(crumbItems), body, jsonld, img: photoUrl(sd) });
 }
 
 /* ---------------- 파비콘 / 아이콘 ---------------- */
@@ -2278,9 +2512,12 @@ function iconResponse(key) {
 /* ---------------- 본문 사진 (GitHub images 폴더) ---------------- */
 
 const PHOTO_COUNT = 42;
-function photoTag(seed, alt) {
+function photoUrl(seed) {
   const n = (pageHash(String(seed) + '#photo') % PHOTO_COUNT) + 1;
-  return `<div class="wrap" style="margin:6px auto 0"><img src="/images/${n}.jpg" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:860px;height:auto;max-height:380px;object-fit:cover;border-radius:20px;display:block;margin:0 auto;box-shadow:0 18px 34px -22px rgba(35,39,65,.35)"></div>`;
+  return `/images/${n}.jpg`;
+}
+function photoTag(seed, alt) {
+  return `<div class="wrap" style="margin:6px auto 0"><img src="${photoUrl(seed)}" alt="${esc(alt)}" width="1200" height="675" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:860px;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:20px;display:block;margin:0 auto;box-shadow:0 18px 34px -22px rgba(35,39,65,.35)"></div>`;
 }
 
 /* ---------------- OG 썸네일 ---------------- */
