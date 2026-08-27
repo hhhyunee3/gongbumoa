@@ -2273,6 +2273,17 @@ ${guide.map((g, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(g[0
 </div></section>
 
 <section><div class="wrap">
+<span class="sec-tag">시험 난이도</span>
+<h2>${esc(name)} 시험 난이도, 이렇게 파악합니다</h2>
+<p class="sub" style="max-width:760px">${pick([
+  `${esc(name)} 시험이 어려운지 궁금하시다면 두 가지를 보면 됩니다. 첫째는 학생이 가진 기출과 프린트로, 서술형 비중과 응용 문제 비율에서 출제 난도가 드러납니다. 둘째는 학교알리미에 공시되는 교과별 학업성취 자료(평균, 표준편차, 성취도별 분포)로, 평균이 낮고 성취도 상위 비율이 적을수록 변별을 두는 시험 경향으로 해석할 수 있습니다.`,
+  `시험 난이도는 소문이 아니라 자료로 확인하는 것이 정확합니다. 학교알리미의 ${esc(name)} 교과별 학업성취 공시(평균·표준편차·성취도 분포)를 보면 과목별로 시험이 변별형인지 확인형인지 가늠할 수 있고, 학생이 가진 기출을 함께 보면 서술형 비중과 출제 스타일까지 파악됩니다.`,
+  `같은 범위라도 학교마다 시험 난도는 다릅니다. ${esc(name)}의 난이도는 학교알리미에 공시된 교과별 평균과 성취도 분포, 그리고 실제 기출의 문항 구성으로 파악합니다. 무료 진단 상담에서 학생이 가진 기출을 분석해 우리 학교 기준의 대비 방향을 잡아드립니다.`,
+], sdk, 110)}</p>
+<div class="card" style="max-width:760px"><h3>📊 학업성취 자료 확인 방법</h3><p style="margin-top:8px">학교알리미(schoolinfo.go.kr)에서 ${esc(name)}을 검색한 뒤 '교과별 학업성취 사항' 항목을 열면 과목별 평균, 표준편차, 성취도(A~E) 분포를 확인할 수 있습니다. 해석이 어려우시면 상담 시 함께 봐드립니다.</p></div>
+</div></section>
+
+<section><div class="wrap">
 <span class="sec-tag">과목별 공부 포인트</span>
 <h2>${esc(name)} 학생을 위한 과목별 공부 방향</h2>
 <p class="sub" style="max-width:760px">같은 ${esc(KIND_LABEL[kind])} 과정이라도 과목마다 지금 잡아야 할 지점이 다릅니다. ${esc(name)} 학생들이 주력하는 과목부터 소개합니다. 과목명을 누르면 ${esc(name)} 맞춤 안내로 이어집니다.</p>
@@ -2446,6 +2457,10 @@ ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에
 ${g ? `<section><div class="wrap">
 <span class="sec-tag">시험 대비</span>
 <h2>${esc(name)} ${subj.name} 시험 대비와 학습 루틴</h2>
+<div class="faq" style="margin-bottom:14px"><h3>${esc(name)} ${subj.name} 시험 난이도 파악법</h3><p style="margin-top:6px">${pick([
+  `${esc(name)} ${subj.name} 시험의 난도는 학교알리미에 공시된 ${subj.name} 학업성취 자료(평균·표준편차·성취도 분포)와 학생이 가진 기출로 파악합니다. 평균이 낮고 상위 성취 비율이 적다면 변별형 출제 경향으로 보고 응용·서술형 대비 비중을 높이고, 평균이 높은 편이면 실수 관리와 꼼꼼한 범위 학습에 무게를 둡니다.`,
+  `${subj.name} 시험이 어렵다는 말만으로는 대비가 안 됩니다. ${esc(name)}의 기출에서 서술형 비중, 응용 문제 비율, 지엽 출제 여부를 확인하고 학교알리미의 ${subj.name} 성취도 분포와 교차 확인하면 우리 학교 시험의 성격이 잡힙니다. 수업 커리큘럼은 그 결과에 맞춰 설계합니다.`,
+], sd, 111)}</p></div>
 <div class="faq" style="margin-bottom:14px"><h3>시험 4주 플랜</h3><p style="margin-top:6px">${fill(pick(g.exam, sd, 53))}</p></div>
 <div class="faq" style="margin-bottom:14px"><h3>평소 주간 루틴</h3><p style="margin-top:6px">${fill(pick(g.routine, sd, 54))}</p></div>
 <div class="faq"><h3>지금 성적대에 맞는 접근법</h3><p style="margin-top:6px">${fill(pick(g.levels, sd, 55))}</p></div>
