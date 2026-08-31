@@ -977,7 +977,7 @@ const SITE = {
   name: '공부모아',
   // 도메인 사면 여기만 바꾸면 canonical/sitemap에 전부 반영됩니다.
   origin: 'https://gongbumoa.com',
-  desc: '전국 5,067개 지역에서 초·중·고 1:1 맞춤 과외를 연결하는 과외 매칭 서비스',
+  desc: '전국 5,067개 지역의 초·중·고 1:1 맞춤 과외 수업 안내. 지역별·학교별·과목별 수업 정보를 확인하고 무료 진단 상담을 받아보세요',
   // 사이트 소유 확인 코드 (네이버 서치어드바이저 / 구글 서치콘솔에서 발급 후 붙여넣기)
   verifyNaver: '02237442fbd0f0a590037ef8def16e87eb9ca27f',
   verifyGoogle: '',
@@ -1107,15 +1107,16 @@ ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="a
 <nav class="nav-links">
 <a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a>
 </nav>
-<a href="/#contact" class="btn btn-primary">무료 상담</a>
+<a href="#contact" class="btn btn-primary">무료 상담</a>
 </div></header>
 <div class="wrap">${crumb}${crumb ? `<div style="font-size:12.5px;color:#98938A;margin:2px 0 0">최종 업데이트: ${_lmKo}</div>` : ''}</div>
 ${body}
+${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0]) : ''}
 <footer><div class="wrap">
 <div class="foot">
 <div><b>${SITE.name}</b>초·중·고 1:1 맞춤 과외<br>아이의 속도에 맞춰 함께 성장합니다.</div>
 <div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
-<div><b>문의</b><a href="/#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
+<div><b>문의</b><a href="#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
 </div>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
 </div></footer>
@@ -1164,6 +1165,79 @@ function subjectRow(basePath, activeSlug) {
   ).join('') + `</div>`;
 }
 
+/* ---------------- 페이지별 상담 신청폼 ---------------- */
+function consultFormBlock(ctx) {
+  const c = esc(String(ctx || '').slice(0, 80));
+  const subjM = String(ctx || '').match(/영어회화|수학|영어|국어|과학|사회|논술/);
+  const subjPre = subjM ? subjM[0] : '';
+  return `<section id="contact"><div class="wrap">
+<style>
+.pform{max-width:640px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 22px;box-shadow:0 16px 34px -26px rgba(35,39,65,.3)}
+.pform h2{font-size:22px;margin-bottom:4px}
+.pform .pf-sub{color:#6b6760;font-size:14px;margin-bottom:16px}
+.pform .ff{margin-bottom:14px}
+.pform label{display:block;font-weight:800;font-size:14px;margin-bottom:6px}
+.pform label em{color:#e5484d;font-style:normal;font-size:12px;font-weight:700}
+.pform input,.pform select,.pform textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font-size:15px;font-family:inherit;background:#fff}
+.pform input.err,.pform select.err{border-color:#e5484d;background:#fff5f5}
+.pform .phone-row{display:flex;gap:8px;align-items:center}
+.pform .phone-row input{text-align:center}
+.pform .addr-row{display:flex;gap:8px}
+.pform .addr-row input{flex:1}
+.pform .btn-addr{white-space:nowrap;border:0;border-radius:12px;padding:0 16px;font-weight:800;background:#232741;color:#fff;cursor:pointer}
+.pform .pf-submit{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:900;background:var(--yellow,#ffd737);color:#232741;cursor:pointer;margin-top:4px}
+.pform .form-msg{margin-top:10px;font-size:14px;font-weight:700;text-align:center}
+.pform .form-msg.ok{color:#1a7f37}.pform .form-msg.no{color:#e5484d}
+.pform .pf-hint{font-size:12.5px;color:#98938a;margin-top:4px}
+</style>
+<div class="pform">
+<h2>${c ? c + ' 상담 신청' : '수업 상담 신청'}</h2>
+<p class="pf-sub">신청을 남겨주시면 순차적으로 연락드려요. 급하시면 <a href="tel:01030388978" style="font-weight:800;color:var(--blue-deep,#2456c9)">010-3038-8978</a></p>
+<p class="inq-line" hidden style="font-size:13.5px;margin-bottom:12px;color:var(--blue-deep,#2456c9);font-weight:700">지금까지 누적 <b class="inq-n"></b>건의 상담이 접수되었습니다</p>
+<form id="pcForm" novalidate>
+<div class="ff"><label>학생이름 <em>* 필수</em></label><input type="text" id="pcName" maxlength="20" placeholder="학생 이름"></div>
+<div class="ff"><label>학년 <em>* 필수</em></label><select id="pcGrade"><option value="">학년 선택</option><optgroup label="초등학교"><option>초1</option><option>초2</option><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중학교"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등학교"><option>고1</option><option>고2</option><option>고3</option></optgroup><option>기타</option></select></div>
+<div class="ff"><label>과목</label><input type="text" id="pcSubject" maxlength="40" value="${esc(subjPre)}" placeholder="예) 수학, 영어 등"></div>
+<div class="ff"><label>연락처 <em>* 필수</em></label><div class="phone-row"><input type="tel" id="pcP1" value="010" maxlength="3" inputmode="numeric"><span>-</span><input type="tel" id="pcP2" maxlength="4" inputmode="numeric" placeholder="0000"><span>-</span><input type="tel" id="pcP3" maxlength="4" inputmode="numeric" placeholder="0000"></div></div>
+<div class="ff"><label>주소 <em>* 필수</em></label><div class="addr-row"><input type="text" id="pcAddr" placeholder="도로명 주소 검색" readonly><button type="button" class="btn-addr" id="pcAddrBtn">주소 검색</button></div><input type="text" id="pcAddrDetail" placeholder="상세 주소 (동/호수) * 필수" maxlength="60" style="margin-top:8px"><p class="pf-hint">주소 검색 후 상세주소까지 입력해야 신청이 완료됩니다.</p></div>
+<div class="ff"><label>상담내용</label><textarea id="pcMemo" rows="3">${c ? c + ' 문의드립니다.' : '과외 문의드립니다.'}</textarea></div>
+<input type="text" id="pcWebsite" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+<button type="submit" class="pf-submit">무료 상담 신청하기</button>
+<div class="form-msg" id="pcMsg"></div>
+</form>
+</div>
+</div></section>
+<script>(function(){
+var $=function(i){return document.getElementById(i)};
+var form=$('pcForm'); if(!form) return;
+var daumLoaded=false;
+function openAddr(){new daum.Postcode({oncomplete:function(d){$('pcAddr').value=d.roadAddress||d.jibunAddress;$('pcAddrDetail').focus();}}).open();}
+$('pcAddrBtn').addEventListener('click',function(){if(daumLoaded){openAddr();return;}var s=document.createElement('script');s.src='https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';s.onload=function(){daumLoaded=true;openAddr();};document.body.appendChild(s);});
+$('pcAddr').addEventListener('click',function(){$('pcAddrBtn').click();});
+form.addEventListener('submit',function(e){
+e.preventDefault();
+var msg=$('pcMsg');msg.className='form-msg';msg.textContent='';
+var bad=null;function mark(el,b){el.classList.toggle('err',!!b);if(b&&!bad)bad=el;}
+mark($('pcName'),!$('pcName').value.trim());
+mark($('pcGrade'),!$('pcGrade').value);
+var p1=$('pcP1').value,p2=$('pcP2').value,p3=$('pcP3').value;
+var phone=p1+'-'+p2+'-'+p3;
+var pOk=/^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(phone);
+mark($('pcP2'),!pOk);mark($('pcP3'),!pOk);
+mark($('pcAddr'),!$('pcAddr').value.trim());
+mark($('pcAddrDetail'),!$('pcAddrDetail').value.trim());
+if(bad){msg.className='form-msg no';msg.textContent='빨간 항목을 확인해 주세요.';bad.focus();return;}
+var btn=form.querySelector('.pf-submit');btn.disabled=true;btn.textContent='접수 중...';
+fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('pcName').value.trim(),grade:$('pcGrade').value,subject:$('pcSubject').value.trim(),phone:phone,addr:$('pcAddr').value.trim(),addrDetail:$('pcAddrDetail').value.trim(),memo:$('pcMemo').value.trim(),website:$('pcWebsite').value,page:(document.title.split(' | ')[0]+' · '+location.pathname).slice(0,200)})})
+.then(function(r){return r.json()}).then(function(d){
+if(d&&d.ok){msg.className='form-msg ok';msg.textContent='신청이 접수되었습니다! 순차적으로 연락드릴게요 😊';form.reset();$('pcP1').value='010';}
+else{msg.className='form-msg no';msg.textContent='접수에 실패했어요. 잠시 후 다시 시도하거나 전화 주세요.';}
+btn.disabled=false;btn.textContent='무료 상담 신청하기';})
+.catch(function(){msg.className='form-msg no';msg.textContent='네트워크 오류가 발생했어요. 전화 주시면 바로 상담됩니다.';btn.disabled=false;btn.textContent='무료 상담 신청하기';});
+});
+})();</script>`;
+}
+
 function ctaBlock(where) {
   const v = pageHash(where + '#cta') % 3;
   const heads = [`${esc(where)} 무료 진단부터 받아보세요`, `${esc(where)} 수업, 진단 상담으로 시작하세요`, `${esc(where)} 학생 무료 상담 신청`];
@@ -1171,7 +1245,7 @@ function ctaBlock(where) {
   return `<section><div class="wrap"><div class="cta">
 <h2>${heads[v]}</h2>
 <p>${leads[v]}</p>
-<div class="btns"><a href="/#contact" class="btn btn-yellow">무료 상담 신청</a><a href="tel:01030388978" class="btn btn-wg">📞 010-3038-8978</a></div>
+<div class="btns"><a href="#contact" class="btn btn-yellow">무료 상담 신청</a><a href="tel:01030388978" class="btn btn-wg">📞 010-3038-8978</a></div>
 <p class="inq-line" hidden style="margin-top:14px;font-size:14px;opacity:.92">지금까지 누적 <b class="inq-n" style="font-size:16px"></b>건의 상담이 접수되었습니다</p>
 </div></div></section>
 <script>(function(){fetch('/api/stats').then(function(r){return r.json()}).then(function(d){if(!d||!d.count||d.count<1)return;var els=document.querySelectorAll('.inq-line');var t=d.count,s=Math.max(0,t-Math.max(5,Math.ceil(t*0.15))),cur=s,steps=20,inc=(t-s)/steps,i=0;els.forEach(function(e){e.hidden=false});function tick(){i++;cur=i>=steps?t:cur+inc;var v=Math.round(cur).toLocaleString('ko-KR');document.querySelectorAll('.inq-n').forEach(function(n){n.textContent=v});if(i<steps)setTimeout(tick,40)}tick()}).catch(function(){})})();</script>`;
@@ -1370,7 +1444,7 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   `${esc(place)} 학생을 위한 1:1 ${subj.name} 수업입니다. ${esc(subj.desc)} 진단 상담은 무료이고, 결과를 보고 시작 여부를 정하시면 됩니다.`,
   `${esc(sgg.disp)} ${esc(place)}에서 ${subj.name} 선생님을 찾고 계신가요? 아이의 현재 상태를 먼저 진단하고, 딱 맞는 선생님을 연결해 드립니다.`,
 ], seedKey + subj.slug, 20)}</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${parentPath}" class="btn btn-ghost">${esc(sgg.disp)} 전체 보기</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${parentPath}" class="btn btn-ghost">${esc(sgg.disp)} 전체 보기</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">1:1</div><div class="l">맞춤 수업</div></div>
 <div class="stat"><div class="n">${sgg.list.length}개</div><div class="l">${esc(sgg.disp)} 수업 ${kindLabel}</div></div>
@@ -1531,7 +1605,7 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   `${grade.name} ${subj.name}은 지금 무엇에 집중하느냐가 다음 단계를 결정합니다. ${esc(place)} 인근 선생님이 무료 진단 후 우리 아이에게 맞는 출발점을 잡아드립니다.`,
   `${esc(place)}에서 ${grade.name} ${subj.name} 선생님을 찾고 계신가요? 학원과 과외 중 무엇이 맞을지부터 무료 상담에서 함께 판단해 드립니다.`,
 ], sd, 40)}</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${subjPath}" class="btn btn-ghost">${esc(place)} ${subj.name}과외 전체</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${subjPath}" class="btn btn-ghost">${esc(place)} ${subj.name}과외 전체</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">${grade.name}</div><div class="l">전문 커리큘럼</div></div>
 <div class="stat"><div class="n">1:1</div><div class="l">맞춤 수업</div></div>
@@ -1667,7 +1741,7 @@ function sggHubPage({ sido, sgg, url }) {
 <span class="tagline">📍 ${sido.full}</span>
 <h1>${esc(sgg.disp)} 과외</h1>
 <p class="lead">${esc(sgg.disp)} 전체 ${sgg.list.length}개 지역에서 1:1 맞춤 과외를 연결해 드립니다. 과목이나 동네를 골라 자세히 확인해 보세요.</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
 
 <section><div class="wrap">
@@ -1738,7 +1812,7 @@ function sidoHubPage({ sido, url }) {
 <span class="tagline">📍 지역별수업</span>
 <h1>${esc(sido.full)} 과외</h1>
 <p class="lead">${esc(sido.full)} 전역 ${sggs.length}개 시군구, ${total}개 지역에서 수업이 가능합니다.</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
 
 <section><div class="wrap">
@@ -1880,7 +1954,7 @@ function subjectNationalPage(subj, url) {
 <span class="tagline">${subj.emoji} 과목수업</span>
 <h1>${subj.name}과외</h1>
 <p class="lead">${esc(subj.desc)}</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
 ${photoTag('subject-' + subj.slug, `${subj.name} 공부`)}
 
@@ -1951,7 +2025,7 @@ function comingSoonPage(kind, url) {
 <span class="tagline">${v.emoji} ${v.h1}</span>
 <h1>${v.h1} 준비 중이에요</h1>
 <p class="lead">${v.lead} 먼저 상담을 남겨주시면 오픈 시 가장 먼저 안내해 드릴게요.</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">미리 상담 남기기 →</a><a href="/regions" class="btn btn-ghost">지역별수업 보기</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">미리 상담 남기기 →</a><a href="/regions" class="btn btn-ghost">지역별수업 보기</a></div>
 </div></section>
 ${ctaBlock(v.h1)}`;
   return page({
@@ -2057,7 +2131,7 @@ function homeWithMeta(origin) {
       name: SITE.name, url: origin, inLanguage: 'ko' },
   ];
   const meta = [
-    `<meta name="description" content="${SITE.desc}. 무료 진단 상담 후 딱 맞는 선생님을 연결해 드립니다.">`,
+    `<meta name="description" content="${SITE.desc}. 진단 후 아이에게 딱 맞는 선생님의 수업으로 시작할 수 있습니다.">`,
     `<link rel="canonical" href="${origin}/">`,
     `<meta name="robots" content="index,follow,max-image-preview:large">`,
     SITE.verifyNaver ? `<meta name="naver-site-verification" content="${SITE.verifyNaver}">` : '',
@@ -2250,7 +2324,7 @@ function schoolsRegionPage(sido, url) {
 <span class="tagline">🏫 학교별수업</span>
 <h1>${esc(sido.full)} 학교별 과외</h1>
 <p class="lead">${esc(sido.full)} ${mine.length.toLocaleString()}개 초·중·고등학교의 내신 스타일에 맞춘 수업을 확인하세요.</p>
-<div class="cta-row"><a href="/schools" class="btn btn-ghost">← 학교 검색으로</a><a href="/#contact" class="btn btn-primary">무료 상담 받기</a></div>
+<div class="cta-row"><a href="/schools" class="btn btn-ghost">← 학교 검색으로</a><a href="#contact" class="btn btn-primary">무료 상담 받기</a></div>
 </div></section>
 ${keys.map(k => `
 <section style="padding:22px 0"><div class="wrap">
@@ -2319,7 +2393,7 @@ function schoolPage(sc, url) {
 <span class="tagline">🏫 ${esc(region)}${reg ? ' ' + esc(reg.dong) : ''}</span>
 <h1>${esc(name)}<br><span style="color:var(--blue)">내신 대비 과외</span></h1>
 <p class="lead">${esc(name)} 시험은 ${esc(name)} 기준으로 준비해야 합니다. 학교 출제 스타일과 진도에 맞춘 1:1 수업으로 내신을 관리해 드려요.</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="tel:01030388978" class="btn btn-ghost">📞 010-3038-8978</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="tel:01030388978" class="btn btn-ghost">📞 010-3038-8978</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">${kindLabel}</div><div class="l">학교급</div></div>
 <div class="stat"><div class="n">1:1</div><div class="l">학교 맞춤 수업</div></div>
@@ -2476,7 +2550,7 @@ function schoolSubjectPage(sc, subj, url) {
   `${esc(name)} 재학생을 위한 ${subj.name} 1:1 내신 수업입니다. 학교 진도와 시험 범위 기준으로 커리큘럼을 짜고, 무료 진단 후 선생님을 연결해 드립니다.`,
   `${esc(name)} ${subj.name} 내신, 범위만 보는 공부로는 부족합니다. 학교 기출 스타일 분석부터 서술형 대비까지, 우리 학교 기준으로 준비합니다.`,
 ], sd, 50)}</p>
-<div class="cta-row"><a href="/#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="/schools/${slug}" class="btn btn-ghost">${esc(name)} 전체 안내</a></div>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="/schools/${slug}" class="btn btn-ghost">${esc(name)} 전체 안내</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">${esc(kindLabel)}</div><div class="l">학교급 맞춤</div></div>
 <div class="stat"><div class="n">1:1</div><div class="l">학교 맞춤 수업</div></div>
