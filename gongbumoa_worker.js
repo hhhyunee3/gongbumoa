@@ -1271,7 +1271,7 @@ ${items.map(f => `<div class="faq"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`
 function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   const place = dong ? dong.name : sgg.disp;
   const kindLabel = dong ? dong.kind : '지역';
-  const title = `${dong ? `${sidoShortName(sido.full)} ${sgg.disp} ${place}` : `${sidoShortName(sido.full)} ${place}`} ${subj.name}과외 | ${SITE.name}`;
+  const title = `${place} ${subj.name}과외 | ${SITE.name}`;
   const h1 = `${place} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
@@ -1459,7 +1459,7 @@ ${ctaBlock(place)}`;
 
 function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   const place = dong ? dong.name : sgg.disp;
-  const title = `${dong ? `${sidoShortName(sido.full)} ${sgg.disp} ${place}` : `${sidoShortName(sido.full)} ${place}`} ${grade.name} ${subj.name}과외 | ${SITE.name}`;
+  const title = `${place} ${grade.name} ${subj.name}과외 | ${SITE.name}`;
   const h1 = `${place} ${grade.name} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
@@ -1657,14 +1657,8 @@ ${ctaBlock(`${place} ${grade.name}`)}`;
 
 /* ---------------- 페이지: 시군구 허브 ---------------- */
 
-function sidoShortName(full) {
-  const map = { '전라남도': '전남', '전라북도': '전북', '전북특별자치도': '전북', '경상남도': '경남', '경상북도': '경북', '충청남도': '충남', '충청북도': '충북', '강원특별자치도': '강원', '제주특별자치도': '제주', '세종특별자치시': '세종' };
-  if (map[full]) return map[full];
-  return String(full).replace(/특별시|광역시|특별자치시|특별자치도|도$/g, '') || full;
-}
-
 function sggHubPage({ sido, sgg, url }) {
-  const title = `${sidoShortName(sido.full)} ${sgg.disp} 과외 | 동네별 과목 과외 - ${SITE.name}`;
+  const title = `${sgg.disp} 과외 | 동네별 과목 과외 - ${SITE.name}`;
   const desc = `${sido.full} ${sgg.disp} 과외. ${sgg.list.length}개 지역에서 수학·영어·국어 등 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`;
   const base = `/${U(sido.key)}/${U(sgg.key)}`;
 
@@ -2280,9 +2274,7 @@ function schoolPage(sc, url) {
   const [name, kind, code, region, slug] = sc;
   const reg = schoolRegion(code);
   const kindLabel = KIND_LABEL[kind];
-  const _rp = String(region).trim().split(/\s+/);
-  const regionShort = _rp.length >= 3 ? _rp.slice(1).join(' ') : `${sidoShortName(_rp[0])} ${_rp.slice(1).join(' ')}`.trim();
-  const title = `${regionShort} ${name} 내신 대비 과외 | ${SITE.name}`;
+  const title = `${name} 내신 대비 과외 | ${SITE.name}`;
   const desc = `${region} ${name} 학생을 위한 내신 맞춤 1:1 과외. 학교 출제 스타일에 맞춘 시험 대비와 수행평가 관리까지, 무료 진단 후 선생님을 연결해 드립니다.`;
 
   // 같은 지역(시군구) 다른 학교
@@ -2429,9 +2421,7 @@ function schoolSubjectPage(sc, subj, url) {
   const kindLabel = KIND_LABEL[kind];
   const grade = GRADE_BY_KIND[kind];
   const reg = schoolRegion(code);
-  const _rp = String(region).trim().split(/\s+/);
-  const regionShort = _rp.length >= 3 ? _rp.slice(1).join(' ') : `${sidoShortName(_rp[0])} ${_rp.slice(1).join(' ')}`.trim();
-  const title = `${regionShort} ${name} ${subj.name} 내신 과외 | ${SITE.name}`;
+  const title = `${name} ${subj.name} 내신 과외 | ${SITE.name}`;
   const desc = `${region} ${name} 학생을 위한 ${subj.name} 내신 맞춤 1:1 과외. 학교 시험 스타일에 맞춘 ${subj.name} 대비와 수행평가 관리까지, 무료 진단 후 선생님을 연결해 드립니다.`;
 
   const sd = code + slug + subj.slug;
