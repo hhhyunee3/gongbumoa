@@ -1111,7 +1111,7 @@ ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="a
 </div></header>
 <div class="wrap">${crumb}${crumb ? `<div style="font-size:12.5px;color:#98938A;margin:2px 0 0">최종 업데이트: ${_lmKo}</div>` : ''}</div>
 ${body}
-${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0]) : ''}
+${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], regionFromPath(canonical ? new URL(canonical).pathname : '')) : ''}
 <footer><div class="wrap">
 <div class="foot">
 <div><b>${SITE.name}</b>초·중·고 1:1 맞춤 과외<br>아이의 속도에 맞춰 함께 성장합니다.</div>
@@ -1165,9 +1165,34 @@ function subjectRow(basePath, activeSlug) {
   ).join('') + `</div>`;
 }
 
+function regionFromPath(pathname) {
+  try {
+    const segs = String(pathname || '').split('/').filter(Boolean).map(s => decodeURIComponent(s).toLowerCase());
+    if (!segs.length) return '';
+    if (segs[0] === 'schools' && segs[1]) {
+      schoolIndex();
+      const s = SCHOOL_BY_SLUG && SCHOOL_BY_SLUG.get(segs[1]);
+      return s ? s[3] : '';
+    }
+    const sido = SIDO[segs[0]];
+    if (!sido) return '';
+    let out = sido.full;
+    const sgg = segs[1] && sido.sgg && sido.sgg[segs[1]];
+    if (sgg) {
+      out += ' ' + sgg.d;
+      if (segs[2] && Array.isArray(sgg.l)) {
+        const d = sgg.l.find(x => x[3] === segs[2]);
+        if (d) out += ' ' + d[0];
+      }
+    }
+    return out;
+  } catch (e) { return ''; }
+}
+
 /* ---------------- 페이지별 상담 신청폼 ---------------- */
-function consultFormBlock(ctx) {
+function consultFormBlock(ctx, addrPre) {
   const c = esc(String(ctx || '').slice(0, 80));
+  const ap = esc(String(addrPre || '').slice(0, 60));
   const subjM = String(ctx || '').match(/영어회화|수학|영어|국어|과학|사회|논술/);
   const subjPre = subjM ? subjM[0] : '';
   return `<section id="contact"><div class="wrap">
@@ -1196,10 +1221,10 @@ function consultFormBlock(ctx) {
 <p class="inq-line" hidden style="font-size:13.5px;margin-bottom:12px;color:var(--blue-deep,#2456c9);font-weight:700">지금까지 누적 <b class="inq-n"></b>건의 상담이 접수되었습니다</p>
 <form id="pcForm" novalidate>
 <div class="ff"><label>학생이름 <em>* 필수</em></label><input type="text" id="pcName" maxlength="20" placeholder="학생 이름"></div>
-<div class="ff"><label>학년 <em>* 필수</em></label><select id="pcGrade"><option value="">학년 선택</option><optgroup label="초등학교"><option>초1</option><option>초2</option><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중학교"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등학교"><option>고1</option><option>고2</option><option>고3</option></optgroup><option>기타</option></select></div>
+<div class="ff"><label>학년</label><select id="pcGrade"><option value="">학년 선택</option><optgroup label="초등학교"><option>초1</option><option>초2</option><option>초3</option><option>초4</option><option>초5</option><option>초6</option></optgroup><optgroup label="중학교"><option>중1</option><option>중2</option><option>중3</option></optgroup><optgroup label="고등학교"><option>고1</option><option>고2</option><option>고3</option></optgroup><option>기타</option></select></div>
 <div class="ff"><label>과목</label><input type="text" id="pcSubject" maxlength="40" value="${esc(subjPre)}" placeholder="예) 수학, 영어 등"></div>
 <div class="ff"><label>연락처 <em>* 필수</em></label><div class="phone-row"><input type="tel" id="pcP1" value="010" maxlength="3" inputmode="numeric"><span>-</span><input type="tel" id="pcP2" maxlength="4" inputmode="numeric" placeholder="0000"><span>-</span><input type="tel" id="pcP3" maxlength="4" inputmode="numeric" placeholder="0000"></div></div>
-<div class="ff"><label>주소 <em>* 필수</em></label><div class="addr-row"><input type="text" id="pcAddr" placeholder="도로명 주소 검색" readonly><button type="button" class="btn-addr" id="pcAddrBtn">주소 검색</button></div><input type="text" id="pcAddrDetail" placeholder="상세 주소 (동/호수) * 필수" maxlength="60" style="margin-top:8px"><p class="pf-hint">주소 검색 후 상세주소까지 입력해야 신청이 완료됩니다.</p></div>
+<div class="ff"><label>주소 <em>* 필수</em></label><div class="addr-row"><input type="text" id="pcAddr" value="${ap}" placeholder="도로명 주소 검색" readonly><button type="button" class="btn-addr" id="pcAddrBtn">주소 검색</button></div><input type="text" id="pcAddrDetail" placeholder="상세 주소 (동/호수) * 필수" maxlength="60" style="margin-top:8px"><p class="pf-hint">주소 검색 후 상세주소까지 입력해야 신청이 완료됩니다.</p></div>
 <div class="ff"><label>상담내용</label><textarea id="pcMemo" rows="3">${c ? c + ' 문의드립니다.' : '과외 문의드립니다.'}</textarea></div>
 <input type="text" id="pcWebsite" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
 <button type="submit" class="pf-submit">무료 상담 신청하기</button>
@@ -1219,7 +1244,6 @@ e.preventDefault();
 var msg=$('pcMsg');msg.className='form-msg';msg.textContent='';
 var bad=null;function mark(el,b){el.classList.toggle('err',!!b);if(b&&!bad)bad=el;}
 mark($('pcName'),!$('pcName').value.trim());
-mark($('pcGrade'),!$('pcGrade').value);
 var p1=$('pcP1').value,p2=$('pcP2').value,p3=$('pcP3').value;
 var phone=p1+'-'+p2+'-'+p3;
 var pOk=/^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(phone);
@@ -2814,7 +2838,7 @@ async function handleConsultPost(request, env) {
   const phone = String(d.phone || '').trim().slice(0, 14);
   const addr = String(d.addr || '').trim().slice(0, 120);
   const addrDetail = String(d.addrDetail || '').trim().slice(0, 60);
-  if (!name || !grade || !/^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(phone) || !addr || !addrDetail) {
+  if (!name || !/^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(phone) || !addr || !addrDetail) {
     return json({ ok: false, error: 'invalid' }, 400);
   }
   const entry = {
