@@ -1262,6 +1262,15 @@ btn.disabled=false;btn.textContent='무료 상담 신청하기';})
 })();</script>`;
 }
 
+function J(word, withBatchim, without) {
+  const w = String(word || '');
+  const ch = w.charCodeAt(w.length - 1);
+  if (ch < 0xAC00 || ch > 0xD7A3) return w + withBatchim; // 한글 아님 → 보수적으로 받침형
+  const jong = (ch - 0xAC00) % 28;
+  if (withBatchim === '으로' && jong === 8) return w + without; // ㄹ 받침은 '로'
+  return w + (jong > 0 ? withBatchim : without);
+}
+
 function ctaBlock(where) {
   const v = pageHash(where + '#cta') % 3;
   const heads = [`${esc(where)} 무료 진단부터 받아보세요`, `${esc(where)} 수업, 진단 상담으로 시작하세요`, `${esc(where)} 학생 무료 상담 신청`];
@@ -1336,7 +1345,7 @@ ${ics.map((c, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(c.t)}
 ${lfs.length ? `<section><div class="wrap">
 <span class="sec-tag">수업 진행</span>
 <h2>${esc(place)} ${subj.name} 과외, 고민별로 이렇게 수업을 이끌어갑니다</h2>
-<p class="sub" style="max-width:760px">같은 ${subj.name}이라도 학생마다 막힌 지점이 다르기에 수업의 출발점도 달라야 합니다. ${esc(place)} 학생과 학부모님이 자주 이야기하는 고민과, 실제 수업이 그 고민을 풀어가는 방식을 소개합니다.</p>
+<p class="sub" style="max-width:760px">같은 ${J(subj.name, '이라도', '라도')} 학생마다 막힌 지점이 다르기에 수업의 출발점도 달라야 합니다. ${esc(place)} 학생과 학부모님이 자주 이야기하는 고민과, 실제 수업이 그 고민을 풀어가는 방식을 소개합니다.</p>
 ${lfs.map((x, i) => `<div class="faq"><h3>"${esc(x.q)}"</h3><p><strong>수업에서는 이렇게 합니다.</strong> ${fill(pick(x.how, sd, 30 + i))}</p></div>`).join('')}
 </div></section>` : ''}
 
@@ -1572,7 +1581,7 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   const lfPool = LESSON_FLOW[subj.slug] || [];
   const lfs = lfPool.length ? rotate(lfPool, pageHash(sd + '#flow') % lfPool.length).slice(0, 3) : [];
   const gradeFaqPool = [
-    { q: `${grade.name} ${subj.name} 과외는 주 몇 회가 적당한가요?`, a: `${grade.name}은 주 1~2회, 회당 90~120분이 일반적입니다. ${place} 학생의 현재 실력과 목표, 다른 일정에 따라 조정하며, 시험 기간에는 횟수를 늘리는 것도 가능합니다.` },
+    { q: `${grade.name} ${subj.name} 과외는 주 몇 회가 적당한가요?`, a: `${J(grade.name, '은', '는')} 주 1~2회, 회당 90~120분이 일반적입니다. ${place} 학생의 현재 실력과 목표, 다른 일정에 따라 조정하며, 시험 기간에는 횟수를 늘리는 것도 가능합니다.` },
     { q: `${grade.name}인데 ${subj.name} 기초가 많이 부족해도 되나요?`, a: `오히려 1:1 과외가 가장 효과적인 경우입니다. 진단으로 어느 지점부터 이해가 끊겼는지 찾아, 이전 과정까지 내려가 다시 쌓아 올립니다. 학원처럼 정해진 진도에 끌려가지 않는 것이 과외의 장점입니다.` },
     { q: `${place}에서 ${grade.name} 학생 방문 수업이 가능한가요?`, a: `네, ${place} 전 지역 방문 수업과 화상 수업 모두 가능합니다. ${grade.name} 학생의 집중력과 일정에 맞춰 상담에서 함께 정하시면 됩니다.` },
     { q: `${grade.name} ${subj.name} 학원과 과외 중 뭐가 나을까요?`, a: `아이 상태에 따라 다릅니다. 개념 구멍이 있거나 질문을 어려워하면 과외가, 경쟁 자극이 필요하면 학원 병행이 맞을 수 있습니다. 무료 진단에서 객관적으로 안내해 드리며, 영어회화 등 다른 수업 문의도 가능합니다.` },
@@ -1624,7 +1633,7 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
 <h1>${esc(h1)}<br><span style="color:var(--blue)">1:1 맞춤 수업</span></h1>
 <p class="lead">${pick([
   `${esc(place)} ${grade.name} 학생을 위한 ${subj.name} 수업입니다. ${grade.name} 시기에 꼭 잡아야 할 것부터 순서대로, 아이 속도에 맞춰 진행합니다.`,
-  `${grade.name} ${subj.name}은 지금 무엇에 집중하느냐가 다음 단계를 결정합니다. ${esc(place)} 인근 선생님이 무료 진단 후 우리 아이에게 맞는 출발점을 잡아드립니다.`,
+  `${grade.name} ${J(subj.name, '은', '는')} 지금 무엇에 집중하느냐가 다음 단계를 결정합니다. ${esc(place)} 인근 선생님이 무료 진단 후 우리 아이에게 맞는 출발점을 잡아드립니다.`,
   `${esc(place)}에서 ${grade.name} ${subj.name} 선생님을 찾고 계신가요? 학원과 과외 중 무엇이 맞을지부터 무료 상담에서 함께 판단해 드립니다.`,
 ], sd, 40)}</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${subjPath}" class="btn btn-ghost">${esc(place)} ${subj.name}과외 전체</a></div>
@@ -1989,7 +1998,7 @@ ${photoTag('subject-' + subj.slug, `${subj.name} 공부`)}
 </div>
 </div></section>
 
-${guideBlock(subj, '전국', 'national', null)}
+${guideBlock(subj, '우리 동네', 'national', null)}
 
 ${(() => {
   const ng = GUIDES[subj.slug];
@@ -1999,7 +2008,7 @@ ${(() => {
   return `<section><div class="wrap">
 <span class="sec-tag">더 많은 고민</span>
 <h2>${subj.name} 공부, 이런 고민도 자주 받아요</h2>
-${extra.map(px => `<div class="faq"><h3>"${esc(px.q)}"</h3><p>${esc(String(px.a).split('{p}').join('전국'))}</p></div>`).join('')}
+${extra.map(px => `<div class="faq"><h3>"${esc(px.q)}"</h3><p>${esc(String(px.a).split('{p}').join('우리 동네'))}</p></div>`).join('')}
 </div></section>`;
 })()}
 
@@ -2399,7 +2408,7 @@ function schoolPage(sc, url) {
   }, {
     '@context': 'https://schema.org', '@type': 'FAQPage',
     mainEntity: [
-      ...guide.map(gg => ({ '@type': 'Question', name: `${name} ${gg[0]}은 어떻게 하나요?`, acceptedAnswer: { '@type': 'Answer', text: gg[1][0] } })),
+      ...guide.map(gg => ({ '@type': 'Question', name: `${name} ${J(gg[0], '은', '는')} 어떻게 하나요?`, acceptedAnswer: { '@type': 'Answer', text: gg[1][0] } })),
       ...lfs2.map(x => ({ '@type': 'Question', name: `${x.q} — ${name} 과외 수업에서 어떻게 해결하나요?`, acceptedAnswer: { '@type': 'Answer', text: String(x.how[0]).split('{p}').join(pl) } })),
     ],
   }, {
@@ -2436,7 +2445,7 @@ ${guide.map((g, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(g[0
   `시험 난이도는 소문이 아니라 자료로 확인하는 것이 정확합니다. 학교알리미의 ${esc(name)} 교과별 학업성취 공시(평균·표준편차·성취도 분포)를 보면 과목별로 시험이 변별형인지 확인형인지 가늠할 수 있고, 학생이 가진 기출을 함께 보면 서술형 비중과 출제 스타일까지 파악됩니다.`,
   `같은 범위라도 학교마다 시험 난도는 다릅니다. ${esc(name)}의 난이도는 학교알리미에 공시된 교과별 평균과 성취도 분포, 그리고 실제 기출의 문항 구성으로 파악합니다. 무료 진단 상담에서 학생이 가진 기출을 분석해 우리 학교 기준의 대비 방향을 잡아드립니다.`,
 ], sdk, 110)}</p>
-<div class="card" style="max-width:760px"><h3>📊 학업성취 자료 확인 방법</h3><p style="margin-top:8px">학교알리미(schoolinfo.go.kr)에서 ${esc(name)}을 검색한 뒤 '교과별 학업성취 사항' 항목을 열면 과목별 평균, 표준편차, 성취도(A~E) 분포를 확인할 수 있습니다. 해석이 어려우시면 상담 시 함께 봐드립니다.</p></div>
+<div class="card" style="max-width:760px"><h3>📊 학업성취 자료 확인 방법</h3><p style="margin-top:8px">학교알리미(schoolinfo.go.kr)에서 ${J(esc(name), '을', '를')} 검색한 뒤 '교과별 학업성취 사항' 항목을 열면 과목별 평균, 표준편차, 성취도(A~E) 분포를 확인할 수 있습니다. 해석이 어려우시면 상담 시 함께 봐드립니다.</p></div>
 </div></section>
 
 <section><div class="wrap">
