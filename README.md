@@ -7,12 +7,18 @@
 ```
 gongbumoa/
 ├── .github/workflows/deploy.yml   자동 배포 설정
-├── image/                          로고·사진 등 이미지 폴더
+├── public/images/                  본문 사진 1.jpg ~ 42.jpg
 ├── README.md
 ├── gongbumoa_worker.js             사이트 전체 (홈 + 지역 페이지 + 라우팅)
 ├── regions.js                      법정동 데이터 5,067개 (자동 생성)
+├── schools.js                      학교 데이터 (자동 생성)
 └── wrangler.toml                   Cloudflare 설정
 ```
+
+> `public/` 안의 파일은 사이트 루트 기준 주소로 그대로 서빙됩니다.
+> 예: `public/images/1.jpg` → `https://gongbumoa.com/images/1.jpg`
+> 사진을 추가할 때는 `public/images/` 에 넣고, `gongbumoa_worker.js` 의
+> `PHOTO_COUNT` 값을 파일 개수에 맞게 올려야 합니다.
 
 ---
 

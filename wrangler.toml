@@ -2,6 +2,14 @@ name = "gongbumoa"
 main = "gongbumoa_worker.js"
 compatibility_date = "2026-07-23"
 
+# ── 본문 사진 (public/images/1.jpg ~ 42.jpg) ──────────
+# public/ 안의 파일이 사이트 루트 기준으로 그대로 서빙됩니다.
+#   public/images/1.jpg  →  https://gongbumoa.com/images/1.jpg
+# 자산에 없는 주소는 기존대로 워커(gongbumoa_worker.js)가 처리합니다.
+# 사진을 추가할 때는 public/images/ 에 넣고 PHOTO_COUNT 를 함께 올리세요.
+[assets]
+directory = "./public/"
+
 # ── 상담 신청 이메일 알림 ──────────────────────────────
 # 사용 전 준비 (Cloudflare 대시보드):
 #  1. gongbumoa.com 도메인 > 이메일(Email Routing) > 활성화

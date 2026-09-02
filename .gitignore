@@ -1,0 +1,6 @@
+# wrangler 로컬 개발 캐시 (배포와 무관, 커밋하지 않음)
+.wrangler/
+
+# 의존성 / OS 생성 파일
+node_modules/
+.DS_Store
