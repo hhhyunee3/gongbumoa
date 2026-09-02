@@ -22,7 +22,8 @@ const HOME_HTML = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>공부모아 - 전국 초·중·고 1:1 방문과외·화상과외</title>
 
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 
 <style>
   :root{
@@ -47,14 +48,14 @@ const HOME_HTML = `<!DOCTYPE html>
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    font-family:'Pretendard',system-ui,sans-serif;
+    font-family:'Pretendard Variable','Pretendard',system-ui,sans-serif;
     background:var(--paper);
     color:var(--ink);
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
-  h1,h2,h3,.jua{font-family:'Pretendard',sans-serif;font-weight:800;letter-spacing:-.03em}
+  h1,h2,h3,.jua{font-family:'Pretendard Variable','Pretendard',sans-serif;font-weight:800;letter-spacing:-.03em}
   a{color:inherit;text-decoration:none}
   .wrap{width:min(1120px,92vw);margin:0 auto}
   .accent{color:var(--blue)}
@@ -68,7 +69,7 @@ const HOME_HTML = `<!DOCTYPE html>
     border-bottom:1px solid var(--line);
   }
   .nav{display:flex;align-items:center;justify-content:space-between;height:70px}
-  .brand{display:flex;align-items:center;gap:10px;font-family:'Pretendard';font-weight:800;font-size:22px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:22px}
   .brand .mark{
     width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
     background:linear-gradient(135deg,var(--blue),#3FD79C);color:#fff;font-size:20px;
@@ -81,7 +82,7 @@ const HOME_HTML = `<!DOCTYPE html>
     display:inline-flex;align-items:center;gap:8px;
     font-weight:700;font-size:15px;padding:12px 22px;border-radius:999px;
     border:none;cursor:pointer;transition:transform .18s ease,box-shadow .2s ease;
-    font-family:'Pretendard';
+    font-family:'Pretendard Variable','Pretendard';
   }
   .btn-primary{background:var(--blue);color:#fff;box-shadow:0 12px 22px -12px var(--blue)}
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 26px -12px var(--blue)}
@@ -109,7 +110,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .hero p.lead{font-size:18px;color:var(--ink-soft);max-width:460px;margin-bottom:30px}
   .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
   .trust{display:flex;gap:28px;flex-wrap:wrap}
-  .trust .num{font-family:'Pretendard';font-weight:800;font-size:30px;color:var(--ink);line-height:1}
+  .trust .num{font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:30px;color:var(--ink);line-height:1}
   .trust .lbl{font-size:13.5px;color:var(--ink-soft);margin-top:4px}
 
   /* grade card (signature) */
@@ -124,7 +125,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .g-card .pill{background:#F0FBF6;color:var(--mint);font-weight:700;font-size:12.5px;padding:5px 11px;border-radius:999px}
   .grade-row{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 16px}
   .grade-box{text-align:center}
-  .grade-box .g{font-family:'Pretendard';font-weight:800;font-size:46px;line-height:1}
+  .grade-box .g{font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:46px;line-height:1}
   .grade-box.old .g{color:#C4C7D4}
   .grade-box.new .g{color:var(--blue)}
   .grade-box .t{font-size:12px;color:var(--ink-soft);margin-top:2px}
@@ -227,13 +228,13 @@ const HOME_HTML = `<!DOCTYPE html>
     padding:26px 22px;position:relative;box-shadow:var(--shadow-soft);
   }
   .step .n{
-    font-family:'Pretendard';font-weight:800;font-size:15px;color:#fff;background:var(--blue);
+    font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:15px;color:#fff;background:var(--blue);
     width:34px;height:34px;border-radius:11px;display:grid;place-items:center;margin-bottom:16px;
   }
   .step:nth-child(2) .n{background:var(--coral)}
   .step:nth-child(3) .n{background:var(--yellow);color:var(--ink)}
   .step:nth-child(4) .n{background:var(--mint)}
-  .step h4{font-family:'Pretendard';font-weight:800;font-size:18px;margin-bottom:8px}
+  .step h4{font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:18px;margin-bottom:8px}
   .step p{font-size:14.5px;color:var(--ink-soft)}
   .step .tag{display:inline-block;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--blue);background:var(--sky);padding:5px 11px;border-radius:999px}
 
@@ -247,7 +248,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .stars{color:var(--yellow);font-size:15px;letter-spacing:2px;margin-bottom:12px}
   .rev q{display:block;font-size:15.5px;color:var(--ink);quotes:none;margin-bottom:18px;line-height:1.65}
   .rev .who{display:flex;align-items:center;gap:11px}
-  .rev .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:'Pretendard';font-weight:800;font-size:16px;color:#fff}
+  .rev .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:'Pretendard Variable','Pretendard';font-weight:800;font-size:16px;color:#fff}
   .rev .who b{font-size:14.5px;display:block}
   .rev .who span{font-size:12.5px;color:var(--ink-soft)}
 
@@ -274,7 +275,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .foot{display:flex;justify-content:space-between;align-items:flex-start;gap:30px;flex-wrap:wrap}
   .foot .brand{font-size:20px;color:var(--ink);margin-bottom:10px}
   .foot-links{display:flex;gap:40px;flex-wrap:wrap}
-  .foot-links b{display:block;color:var(--ink);font-size:14px;margin-bottom:10px;font-family:'Pretendard';font-weight:700}
+  .foot-links b{display:block;color:var(--ink);font-size:14px;margin-bottom:10px;font-family:'Pretendard Variable','Pretendard';font-weight:700}
   .foot-links a{display:block;margin-bottom:7px;transition:color .2s}
   .foot-links a:hover{color:var(--blue)}
   .copy{margin-top:30px;font-size:13px;color:#A7AABB}
@@ -313,7 +314,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .ff label em{color:#E5484D;font-style:normal;font-size:13px;font-weight:700}
   .ff .hint{font-size:13px;color:var(--ink-soft);margin:-3px 0 9px}
   .ff .hint b{color:#E5484D}
-  .ff input,.ff select,.ff textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;background:#FCFCFA;padding:13px 15px;font-size:15px;font-family:'Pretendard';color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box}
+  .ff input,.ff select,.ff textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;background:#FCFCFA;padding:13px 15px;font-size:15px;font-family:'Pretendard Variable','Pretendard';color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box}
   .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(16,196,110,.13);background:#fff}
   .ff input.err,.ff select.err{border-color:#E5484D}
   .ff textarea{resize:vertical;min-height:80px}
@@ -322,9 +323,9 @@ const HOME_HTML = `<!DOCTYPE html>
   .phone-row span{color:var(--ink-soft)}
   .addr-row{display:flex;gap:8px}
   .addr-row input{flex:1;background:#F4F4F1}
-  .btn-addr{flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:0 18px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Pretendard'}
+  .btn-addr{flex-shrink:0;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:0 18px;font-weight:700;font-size:14.5px;cursor:pointer;font-family:'Pretendard Variable','Pretendard'}
   .btn-addr:hover{background:var(--blue-deep)}
-  .submit-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:800;font-family:'Pretendard';cursor:pointer;margin-top:6px;transition:transform .15s,background .15s;box-shadow:0 12px 22px -12px var(--blue)}
+  .submit-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:16px;font-size:17px;font-weight:800;font-family:'Pretendard Variable','Pretendard';cursor:pointer;margin-top:6px;transition:transform .15s,background .15s;box-shadow:0 12px 22px -12px var(--blue)}
   .submit-btn:hover{transform:translateY(-2px);background:var(--blue-deep)}
   .submit-btn:disabled{opacity:.6;cursor:default;transform:none}
   .form-msg{margin-top:14px;font-size:14.5px;font-weight:700;text-align:center;min-height:20px}
@@ -991,7 +992,7 @@ const CSS = `
 --shadow:0 14px 34px -18px rgba(35,39,65,.35);--shadow-soft:0 8px 24px -16px rgba(35,39,65,.3)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Pretendard',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{font-family:'Pretendard Variable','Pretendard',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
 h1,h2,h3{font-weight:800;letter-spacing:-.03em}
 a{color:inherit;text-decoration:none}
 .wrap{width:min(1100px,92vw);margin:0 auto}
@@ -1105,7 +1106,8 @@ ${SITE.verifyGoogle ? `<meta name="google-site-verification" content="${SITE.ver
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
 <meta property="article:modified_time" content="${_lm.toISOString()}">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>${CSS}</style>
 ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="application/ld+json">${JSON.stringify(j)}</script>`).join('\n') : ''}
 </head>
@@ -2307,7 +2309,7 @@ function schoolsHubPage(url) {
 <p class="lead">전국 ${total}개 초·중·고등학교의 시험 스타일에 맞춘 내신 대비 수업. 학교 이름이나 지역(동네)을 검색해 보세요.</p>
 <div style="max-width:560px;position:relative">
   <input type="text" id="schoolQ" placeholder="학교 이름 또는 지역 검색 (예: 역삼, 분당구, 백현중)"
-    style="width:100%;box-sizing:border-box;border:2px solid var(--blue);border-radius:16px;padding:16px 18px;font-size:16px;font-family:'Pretendard';outline:none;background:#fff;box-shadow:var(--shadow-soft)">
+    style="width:100%;box-sizing:border-box;border:2px solid var(--blue);border-radius:16px;padding:16px 18px;font-size:16px;font-family:'Pretendard Variable','Pretendard';outline:none;background:#fff;box-shadow:var(--shadow-soft)">
   <div id="schoolR" style="position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:none;z-index:30;max-height:420px;overflow-y:auto"></div>
 </div>
 </div></section>
