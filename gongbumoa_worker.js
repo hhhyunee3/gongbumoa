@@ -432,6 +432,7 @@ const HOME_HTML = `<!DOCTYPE html>
     </div>
   </div>
 </section>
+<!--QUICK_LINKS-->
 <section class="features" id="features">
   <div class="wrap feat-grid">
     <div class="feat reveal">
@@ -1034,6 +1035,13 @@ h2{font-size:clamp(23px,3.2vw,31px);margin-bottom:12px}
 .step:nth-child(2) .n{background:var(--coral)}.step:nth-child(3) .n{background:var(--yellow);color:var(--ink)}.step:nth-child(4) .n{background:var(--grape)}
 .step h3{font-size:17px;margin-bottom:6px}
 .step p{font-size:14px;color:var(--ink-soft)}
+.foot-regions{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;font-size:13px;line-height:2}
+.foot-regions b{display:block;color:var(--ink);margin-bottom:6px;font-size:13.5px}
+.foot-regions a{color:var(--ink-soft);text-decoration:none;margin-right:14px;white-space:nowrap}
+.foot-regions a:hover{color:var(--blue-deep);text-decoration:underline}
+.quick-links{padding:8px 0 4px}
+.quick-links h2{font-size:19px;margin:26px 0 12px}
+.quick-links .chips{margin-bottom:4px}
 .chips{display:flex;flex-wrap:wrap;gap:9px}
 .chip{display:inline-block;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14.5px;font-weight:600;color:var(--ink-soft);transition:all .18s}
 .chip:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-2px)}
@@ -1118,6 +1126,7 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
 <div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
 <div><b>문의</b><a href="#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
 </div>
+<div class="foot-regions"><b>지역별 과외</b>${Object.entries(SIDO).map(([k, v]) => `<a href="/${U(k)}">${v.full} 과외</a>`).join('')}</div>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
 </div></footer>
 </body></html>`;
@@ -2179,7 +2188,18 @@ function homeWithMeta(origin) {
     `<link rel="alternate" type="application/rss+xml" title="${SITE.name}" href="${origin}/rss.xml">`,
     ...ld.map(j => `<script type="application/ld+json">${JSON.stringify(j)}</script>`),
   ].filter(Boolean).join('\n');
-  HOME_CACHE = HOME_HTML.replace('</head>', meta + '\n</head>');
+  // 홈에서 시도·과목 페이지로 직접 연결한다.
+  // 홈은 사이트에서 가장 권위가 높은 페이지인데 나가는 링크가 4개뿐이라,
+  // 하위 지역·과목 페이지가 크롤러에게서 그만큼 멀어져 있었다.
+  const quickLinks = `<section class="quick-links"><div class="wrap">
+<h2>지역으로 찾기</h2>
+<div class="chips">${Object.entries(SIDO).map(([k, v]) => `<a class="chip" href="/${U(k)}">${v.full} 과외</a>`).join('')}</div>
+<h2>과목으로 찾기</h2>
+<div class="chips">${SUBJECTS.map(x => `<a class="chip" href="/subjects/${x.slug}">${x.name}과외</a>`).join('')}</div>
+</div></section>`;
+  HOME_CACHE = HOME_HTML
+    .replace('</head>', meta + '\n</head>')
+    .replace('<!--QUICK_LINKS-->', quickLinks);
   return HOME_CACHE;
 }
 
