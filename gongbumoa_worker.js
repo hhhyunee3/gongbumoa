@@ -2100,13 +2100,31 @@ ${items.map(u => `<sitemap><loc>${u}</loc></sitemap>`).join('\n')}
 }
 
 function sitemapMain(origin) {
-  return xmlUrlset([
-    `${origin}/`, `${origin}/regions`, `${origin}/subjects`,
-    ...SUBJECTS.map(s => `${origin}/subjects/${s.slug}`),
-    `${origin}/schools`,
+  const plain = [
+    `${origin}/regions`, `${origin}/subjects`, `${origin}/schools`,
     ...Object.keys(SIDO).map(k => `${origin}/schools/region/${k}`),
     ...Object.keys(SIDO).map(k => `${origin}/${U(k)}`),
-  ]);
+  ];
+  // 사진이 실제로 실리는 페이지에만 이미지 정보를 붙인다.
+  // 같은 사진 42장이 21만 페이지에 반복되므로 전 페이지에 붙이는 것은
+  // 색인에 도움이 되지 않아, 홈과 과목 페이지에만 넣는다.
+  const withImg = [
+    [`${origin}/`, photoUrl('home'), `${SITE.name} 초·중·고 1:1 맞춤 과외`],
+    ...SUBJECTS.map(s => [
+      `${origin}/subjects/${s.slug}`,
+      photoUrl('subject-' + s.slug),
+      `${s.name} 공부하는 학생`,
+    ]),
+  ];
+  const body = plain.map(u => `<url><loc>${u}</loc></url>`)
+    .concat(withImg.map(([u, img, alt]) =>
+      `<url><loc>${u}</loc><image:image><image:loc>${origin}${img}</image:loc>` +
+      `<image:title>${esc(alt)}</image:title></image:image></url>`))
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${body}
+</urlset>`;
 }
 
 function sitemapSido(sidoKey, origin) {
@@ -2734,8 +2752,10 @@ function photoUrl(seed) {
   const n = (pageHash(String(seed) + '#photo') % PHOTO_COUNT) + 1;
   return `/images/${n}.jpg`;
 }
+// 이 사진은 h1 바로 뒤에 오는 첫 화면 요소라 대부분 LCP 대상이 된다.
+// lazy 로 두면 브라우저가 늦게 받아 LCP 가 그만큼 밀리므로 eager + 높은 우선순위로 받는다.
 function photoTag(seed, alt) {
-  return `<div class="wrap" style="margin:6px auto 0"><img src="${photoUrl(seed)}" alt="${esc(alt)}" width="1200" height="675" loading="lazy" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:860px;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:20px;display:block;margin:0 auto;box-shadow:0 18px 34px -22px rgba(35,39,65,.35)"></div>`;
+  return `<div class="wrap" style="margin:6px auto 0"><img src="${photoUrl(seed)}" alt="${esc(alt)}" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:860px;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:20px;display:block;margin:0 auto;box-shadow:0 18px 34px -22px rgba(35,39,65,.35)"></div>`;
 }
 
 
