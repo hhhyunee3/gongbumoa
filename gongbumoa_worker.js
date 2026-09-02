@@ -20,7 +20,7 @@ const HOME_HTML = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>공부모아 · 초·중·고 맞춤 수업</title>
+<title>공부모아 - 전국 초·중·고 1:1 방문과외·화상과외</title>
 
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 
@@ -1070,7 +1070,7 @@ const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;',
 /**
  * 공통 HTML 셸.
  */
-function page({ title, desc, canonical, crumb = '', body, jsonld, img = null }) {
+function page({ title, desc, canonical, crumb = '', body, jsonld, img = null, robots = 'index,follow,max-image-preview:large' }) {
   const _lm = new Date((Math.floor(Date.now() / 86400000) - ((pageHash(canonical || title) % 35) + 2)) * 86400000);
   const _lmKo = `${_lm.getFullYear()}년 ${_lm.getMonth() + 1}월 ${_lm.getDate()}일`;
   return `<!DOCTYPE html>
@@ -1081,7 +1081,7 @@ function page({ title, desc, canonical, crumb = '', body, jsonld, img = null }) 
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${canonical}">
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="${robots}">
 ${SITE.verifyNaver ? `<meta name="naver-site-verification" content="${SITE.verifyNaver}">` : ''}
 ${SITE.verifyGoogle ? `<meta name="google-site-verification" content="${SITE.verifyGoogle}">` : ''}
 <meta property="og:type" content="website">
@@ -1378,7 +1378,7 @@ ${items.map(f => `<div class="faq"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`
 function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   const place = dong ? dong.name : sgg.disp;
   const kindLabel = dong ? dong.kind : '지역';
-  const title = `${place} ${subj.name}과외 | ${SITE.name}`;
+  const title = `${place} ${subj.name}과외 - 초·중·고 1:1 방문수업 | ${SITE.name}`;
   const h1 = `${place} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
@@ -1565,7 +1565,7 @@ ${ctaBlock(place)}`;
 
 function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   const place = dong ? dong.name : sgg.disp;
-  const title = `${place} ${grade.name} ${subj.name}과외 | ${SITE.name}`;
+  const title = `${place} ${grade.name} ${subj.name}과외 - 1:1 맞춤 내신수업 | ${SITE.name}`;
   const h1 = `${place} ${grade.name} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
@@ -1763,7 +1763,7 @@ ${ctaBlock(`${place} ${grade.name}`)}`;
 /* ---------------- 페이지: 시군구 허브 ---------------- */
 
 function sggHubPage({ sido, sgg, url }) {
-  const title = `${sgg.disp} 과외 | 동네별 과목 과외 - ${SITE.name}`;
+  const title = `${sgg.disp} 과외 - 동네별 초·중·고 1:1 방문수업 | ${SITE.name}`;
   const desc = `${sido.full} ${sgg.disp} 과외. ${sgg.list.length}개 지역에서 수학·영어·국어 등 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`;
   const base = `/${U(sido.key)}/${U(sgg.key)}`;
 
@@ -1834,7 +1834,7 @@ ${ctaBlock(sgg.disp)}`;
 function sidoHubPage({ sido, url }) {
   const sggs = Object.entries(sido.sgg);
   const total = sggs.reduce((a, [, v]) => a + v.l.length, 0);
-  const title = `${sido.full} 과외 | 시군구별 과외 - ${SITE.name}`;
+  const title = `${sido.full} 과외 - 시군구별 초·중·고 1:1 맞춤수업 | ${SITE.name}`;
   const desc = `${sido.full} 과외. ${sggs.length}개 시군구, ${total}개 지역에서 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`;
 
   const body = `
@@ -1915,7 +1915,7 @@ ${entries.map(([k, v]) => {
 ${ctaBlock('전국 어디서나')}`;
 
   return page({
-    title: `지역별 과외 | 전국 ${total.toLocaleString()}개 지역 - ${SITE.name}`,
+    title: `지역별 과외 - 전국 ${total.toLocaleString()}개 동네 1:1 방문수업 | ${SITE.name}`,
     desc: `전국 ${total.toLocaleString()}개 지역에서 수학·영어·국어 등 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`,
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업' }]),
@@ -1968,7 +1968,7 @@ ${faqBlock([
 
 ${ctaBlock('어떤 과목이든')}`;
   return page({
-    title: `과목별 과외 | ${SITE.name}`,
+    title: `과목별 과외 - 수학·영어·국어·과학·사회 1:1 | ${SITE.name}`,
     desc: '수학·영어·국어·과학·사회·논술 등 과목별 초·중·고 1:1 맞춤 과외.',
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업' }]),
@@ -2030,7 +2030,7 @@ ${faqBlock([
 
 ${ctaBlock(`${subj.name} 과외`)}`;
   return page({
-    title: `${subj.name}과외 | 초·중·고 1:1 맞춤 - ${SITE.name}`,
+    title: `${subj.name}과외 - 초·중·고 1:1 방문·화상 맞춤수업 | ${SITE.name}`,
     desc: `${subj.name}과외. ${subj.desc} 전국 어디서나 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`,
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업', url: '/subjects' }, { name: `${subj.name}과외` }]),
@@ -2062,6 +2062,8 @@ ${ctaBlock(v.h1)}`;
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: v.h1 }]),
     body,
+    // 오픈 전 안내만 있는 페이지 — 색인에서 제외하고 링크만 따라가게 한다
+    robots: 'noindex,follow',
   });
 }
 
@@ -2376,7 +2378,9 @@ function schoolPage(sc, url) {
   const [name, kind, code, region, slug] = sc;
   const reg = schoolRegion(code);
   const kindLabel = KIND_LABEL[kind];
-  const title = `${name} 내신 대비 과외 | ${SITE.name}`;
+  const title = name.length > 10
+    ? `${name} 내신 과외 | ${SITE.name}`
+    : `${name} 내신 과외 - 1:1 시험대비 수업 | ${SITE.name}`;
   const desc = `${region} ${name} 학생을 위한 내신 맞춤 1:1 과외. 학교 출제 스타일에 맞춘 시험 대비와 수행평가 관리까지, 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`;
 
   // 같은 지역(시군구) 다른 학교
@@ -2523,7 +2527,9 @@ function schoolSubjectPage(sc, subj, url) {
   const kindLabel = KIND_LABEL[kind];
   const grade = GRADE_BY_KIND[kind];
   const reg = schoolRegion(code);
-  const title = `${name} ${subj.name} 내신 과외 | ${SITE.name}`;
+  const title = name.length > 10
+    ? `${name} ${subj.name}과외 | ${SITE.name}`
+    : `${name} ${subj.name}과외 - 내신 1:1 시험대비 | ${SITE.name}`;
   const desc = `${region} ${name} 학생을 위한 ${subj.name} 내신 맞춤 1:1 과외. 학교 시험 스타일에 맞춘 ${subj.name} 대비와 수행평가 관리까지, 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`;
 
   const sd = code + slug + subj.slug;
