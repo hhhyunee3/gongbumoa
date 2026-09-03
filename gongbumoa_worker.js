@@ -3035,6 +3035,28 @@ const GOOGLE_FORM = {
   },
 };
 
+// Apps Script 웹앱으로 한 줄 기록. env.SHEET_WEBHOOK_URL 이 있을 때만 동작한다.
+// level-up-lesson 과 같은 필드 이름을 써서 스크립트 한 벌로 두 사이트를 받는다.
+async function saveToSheet(env, entry) {
+  if (!env.SHEET_WEBHOOK_URL) return false;
+  const r = await fetch(env.SHEET_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      site: SITE.name,
+      name: entry.name,
+      phone: entry.phone,
+      address: (entry.addr + ' ' + entry.addrDetail).trim(),
+      grade: entry.grade,
+      subjects: entry.subject ? [entry.subject] : [],
+      message: entry.memo,
+      page: entry.page,
+      atDisplay: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }),
+    }),
+  });
+  return r.ok;
+}
+
 async function saveToGoogleForm(entry) {
   if (!GOOGLE_FORM.action) return;
   const f = GOOGLE_FORM.fields;
@@ -3150,12 +3172,25 @@ async function handleConsultPost(request, env) {
     memo: String(d.memo || '').trim().slice(0, 500),
     page: String(d.page || '').slice(0, 200),
   };
+  // 백업(시트)은 메일 성공 여부와 무관하게 시도한다.
+  // 이전에는 메일이 실패하면 여기서 바로 반환해 시트에도 안 남았다.
+  // 백업이 주 경로의 성공에 의존하면 백업이 아니다.
+  let mailOk = false, sheetOk = false;
   try {
     await sendNotifyMail(env, entry);
+    mailOk = true;
   } catch (e) {
+    console.log('알림 메일 발송 실패:', e && e.message ? e.message : e);
+  }
+  try { await saveToGoogleForm(entry); } catch (e) { /* 폼 백업 실패는 무시 */ }
+  // 구글 시트 기록. 두 사이트가 같은 시트를 쓰도록 필드 이름을 맞춰 보낸다.
+  try { sheetOk = await saveToSheet(env, entry); } catch (e) { console.log('시트 기록 실패:', e && e.message); }
+
+  console.log('새 상담 신청:', JSON.stringify(entry), '| 메일:', mailOk, '| 시트:', sheetOk);
+  if (!mailOk && !sheetOk) {
+    // 어디에도 남지 않았다. 완료라고 말하면 신청이 그대로 사라진다.
     return json({ ok: false, error: 'mail-fail' }, 500);
   }
-  try { await saveToGoogleForm(entry); } catch (e) { /* 백업 실패는 무시 */ }
   try {
     if (env.STATS) {
       const cur = parseInt(await env.STATS.get('consult_count') || '0', 10);

@@ -4,3 +4,6 @@
 # 의존성 / OS 생성 파일
 node_modules/
 .DS_Store
+
+# wrangler dev 로컬 변수 (커밋 금지)
+.dev.vars
