@@ -724,19 +724,25 @@ const HOME_HTML = `<!DOCTYPE html>
 /* ========== 과목 정의 ========== */
 // 과목 정의 — 여기만 고치면 전체 페이지에 반영됩니다.
 const SUBJECTS = [
-  { slug: 'math', name: '수학', emoji: '📐', color: 'mint',
+  { slug: 'math', name: '수학', tone: '#12C971', tint: '#E7FAF0', color: 'mint',
     desc: '개념부터 실전까지, 막힌 단원을 정확히 짚어 성적을 끌어올립니다.' },
-  { slug: 'english', name: '영어', emoji: '📗', color: 'coral',
+  { slug: 'english', name: '영어', tone: '#F2643B', tint: '#FFEDE7', color: 'coral',
     desc: '어휘·구문·독해를 단계별로 잡아 내신과 수능을 함께 대비합니다.' },
-  { slug: 'korean', name: '국어', emoji: '📖', color: 'grape',
+  { slug: 'korean', name: '국어', tone: '#8A57F5', tint: '#F1EAFF', color: 'grape',
     desc: '문학과 비문학 지문 접근법을 익혀 흔들리지 않는 독해력을 만듭니다.' },
-  { slug: 'science', name: '과학', emoji: '🔬', color: 'sky',
+  { slug: 'science', name: '과학', tone: '#2BA8E0', tint: '#E4F4FD', color: 'sky',
     desc: '물리·화학·생명·지구과학 개념을 실험과 원리 중심으로 이해합니다.' },
-  { slug: 'social', name: '사회', emoji: '🌏', color: 'yellow',
+  { slug: 'social', name: '사회', tone: '#D99400', tint: '#FFF4D9', color: 'yellow',
     desc: '흐름과 맥락을 잡아 암기 부담을 줄이고 서술형까지 대비합니다.' },
-  { slug: 'essay', name: '논술', emoji: '✍️', color: 'pink',
+  { slug: 'essay', name: '논술', tone: '#F0518A', tint: '#FFE9F1', color: 'pink',
     desc: '생각을 논리적으로 구성하고 글로 풀어내는 훈련을 합니다.' },
 ];
+
+// 이모지는 기기·폰트마다 모양과 크기가 달라 줄맞춤이 흐트러진다.
+// 과목 구분은 이모지 대신 과목색 점으로 표시한다.
+function dot(tone, extra) {
+  return `<i class="sdot" style="background:${tone || 'var(--blue)'}${extra || ''}"></i>`;
+}
 
 const SUBJECT_MAP = Object.fromEntries(SUBJECTS.map(s => [s.slug, s]));
 
@@ -1131,9 +1137,14 @@ h2{font-size:clamp(23px,3.2vw,31px);margin-bottom:12px}
 .step:nth-child(2) .n{background:var(--coral)}.step:nth-child(3) .n{background:var(--yellow);color:var(--ink)}.step:nth-child(4) .n{background:var(--grape)}
 .step h3{font-size:17px;margin-bottom:6px}
 .step p{font-size:14px;color:var(--ink-soft)}
-.foot-regions{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;font-size:13px;line-height:2}
-.foot-regions b{display:block;color:var(--ink);margin-bottom:6px;font-size:13.5px}
-.foot-regions a{color:var(--ink-soft);text-decoration:none;margin-right:14px;white-space:nowrap}
+.foot-regions{border-top:1px solid var(--line);margin-top:16px;padding-top:12px;font-size:12px;line-height:1.95;color:#98938A}
+.foot-regions>summary{cursor:pointer;list-style:none;font-size:12px;color:#98938A;padding:2px 0;user-select:none}
+.foot-regions>summary::-webkit-details-marker{display:none}
+.foot-regions>summary::before{content:'+ ';font-weight:700}
+.foot-regions[open]>summary::before{content:'− '}
+.foot-regions>summary:hover{color:var(--blue-deep)}
+.foot-regions .fr-list{margin-top:8px}
+.foot-regions a{color:#98938A;text-decoration:none;margin-right:12px;white-space:nowrap}
 .foot-regions a:hover{color:var(--blue-deep);text-decoration:underline}
 .quick-links{padding:8px 0 4px}
 .quick-links h2{font-size:19px;margin:26px 0 12px}
@@ -1142,6 +1153,7 @@ h2{font-size:clamp(23px,3.2vw,31px);margin-bottom:12px}
 .chip{display:inline-block;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14.5px;font-weight:600;color:var(--ink-soft);transition:all .18s}
 .chip:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-2px)}
 .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.sdot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;vertical-align:middle;position:relative;top:-1px}
 .subj-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
 .subj{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:11px 17px;font-weight:700;font-size:14.5px;transition:all .18s}
 .subj:hover{transform:translateY(-3px);border-color:var(--blue);color:var(--blue-deep)}
@@ -1229,7 +1241,7 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
 <div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
 <div><b>문의</b><a href="#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
 </div>
-<div class="foot-regions"><b>지역별 과외</b>${Object.entries(SIDO).map(([k, v]) => `<a href="/${U(k)}">${v.full} 과외</a>`).join('')}</div>
+<details class="foot-regions"><summary>지역별 과외</summary><div class="fr-list">${Object.entries(SIDO).map(([k, v]) => `<a href="/${U(k)}">${v.full} 과외</a>`).join('')}</div></details>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
 </div></footer>
 </body></html>`;
@@ -1285,7 +1297,7 @@ function getDong(sidoKey, sggKey, dongName) {
 
 function subjectRow(basePath, activeSlug) {
   return `<div class="subj-row">` + SUBJECTS.map(s =>
-    `<a class="subj" href="${basePath}/${s.slug}"${s.slug === activeSlug ? ' style="border-color:var(--blue);color:var(--blue-deep)"' : ''}>${s.emoji} ${s.name}과외</a>`
+    `<a class="subj" href="${basePath}/${s.slug}"${s.slug === activeSlug ? ' style="border-color:var(--blue);color:var(--blue-deep)"' : ''}>${dot(s.tone)}${s.name}과외</a>`
   ).join('') + `</div>`;
 }
 
@@ -1627,7 +1639,7 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">${subj.emoji} ${sido.full} ${sgg.disp}</span>
+<span class="tagline">${dot(subj.tone)}${sido.full} ${sgg.disp}</span>
 <h1>${esc(h1)}<br><span style="color:var(--blue)">1:1 맞춤 수업</span></h1>
 <p class="lead">${pick([
   `${esc(place)}에서 ${subj.name} 때문에 고민이신가요? ${esc(subj.desc)} ${esc(place)} 인근에서 아이에게 맞는 선생님을 연결해 드립니다.`,
@@ -1788,7 +1800,7 @@ function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">${subj.emoji} ${sido.full} ${sgg.disp} · ${grade.name}</span>
+<span class="tagline">${dot(subj.tone)}${sido.full} ${sgg.disp} · ${grade.name}</span>
 <h1>${esc(h1)}<br><span style="color:var(--blue)">1:1 맞춤 수업</span></h1>
 <p class="lead">${pick([
   `${esc(place)} ${grade.name} 학생을 위한 ${subj.name} 수업입니다. ${grade.name} 시기에 꼭 잡아야 할 것부터 순서대로, 아이 속도에 맞춰 진행합니다.`,
@@ -1936,7 +1948,7 @@ function sggHubPage({ sido, sgg, url }) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">📍 ${sido.full}</span>
+<span class="tagline">${dot()}${sido.full}</span>
 <h1>${esc(sgg.disp)} 과외</h1>
 <p class="lead">경력이 증명된 전문 선생님이 ${esc(sgg.disp)} 집으로 찾아가 1:1로 수업합니다. 다니는 학교의 시험 유형에 맞춰 준비하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
@@ -2008,7 +2020,7 @@ function sidoHubPage({ sido, url }) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">📍 지역별수업</span>
+<span class="tagline">${dot()}지역별수업</span>
 <h1>${esc(sido.full)} 과외</h1>
 <p class="lead">경력이 증명된 전문 선생님이 ${esc(sido.full)} 전역에서 방문 또는 화상으로 1:1 수업합니다. 초·중·고 전 과목과 고등 선택과목까지, 다니는 학교의 시험 유형에 맞춰 준비합니다.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
@@ -2068,7 +2080,7 @@ function regionRootPage(url) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">📍 지역별수업</span>
+<span class="tagline">${dot()}지역별수업</span>
 <h1>우리 동네 과외 찾기</h1>
 <p class="lead">경력이 증명된 전문 선생님이 집으로 찾아가 초·중·고 1:1 수업을 합니다. 우리 동네를 찾으시면 그 지역 학교 기준으로 준비한 수업 안내를 보실 수 있습니다.</p>
 </div></section>
@@ -2133,13 +2145,13 @@ ${ctaBlock('전국 어디서나')}`;
 function subjectRootPage(url) {
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">📚 과목수업</span>
+<span class="tagline">${dot()}과목수업</span>
 <h1>과목별 과외</h1>
 <p class="lead">필요한 과목만 골라 집중적으로 수업받을 수 있어요.</p>
 </div></section>
 <section><div class="wrap">
 <div class="grid g3">
-${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic">${s.emoji}</div><h3>${s.name}과외</h3><p>${esc(s.desc)}</p></a>`).join('')}
+${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic" style="background:${s.tint};color:${s.tone};font-size:21px;font-weight:800">${s.name[0]}</div><h3>${s.name}과외</h3><p>${esc(s.desc)}</p></a>`).join('')}
 </div>
 </div></section>
 
@@ -2148,9 +2160,9 @@ ${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic">
 <h2>어떤 과목부터 시작해야 할까요?</h2>
 <p class="sub">과목 선택이 고민이라면 이 세 가지 기준으로 판단해 보세요.</p>
 <div class="grid g3">
-<div class="card"><div class="ic">🚨</div><h3>시험이 급하다면</h3><p>다가오는 내신에서 가장 위험한 과목부터 시작하세요. 시험 4주 전이라면 한 과목에 집중하는 것이 두 과목을 얕게 하는 것보다 결과가 좋습니다.</p></div>
-<div class="card"><div class="ic">🏗️</div><h3>장기전이라면</h3><p>수학과 영어부터 잡는 것이 정석입니다. 두 과목은 실력이 쌓이는 데 가장 오래 걸리는 계단식 과목이라, 일찍 시작할수록 유리합니다.</p></div>
-<div class="card"><div class="ic">🧭</div><h3>잘 모르겠다면</h3><p>상담에서 전 과목 상태를 확인하고 우선순위를 함께 정해드립니다. 막연한 불안보다 정확한 확인이 먼저입니다.</p></div>
+<div class="card"><div class="ic" style="background:#FFEDE7;color:#F2643B;font-size:21px;font-weight:800">1</div><h3>시험이 급하다면</h3><p>다가오는 내신에서 가장 위험한 과목부터 시작하세요. 시험 4주 전이라면 한 과목에 집중하는 것이 두 과목을 얕게 하는 것보다 결과가 좋습니다.</p></div>
+<div class="card"><div class="ic" style="background:#FFF4D9;color:#D99400;font-size:21px;font-weight:800">2</div><h3>장기전이라면</h3><p>수학과 영어부터 잡는 것이 정석입니다. 두 과목은 실력이 쌓이는 데 가장 오래 걸리는 계단식 과목이라, 일찍 시작할수록 유리합니다.</p></div>
+<div class="card"><div class="ic" style="background:#E4F4FD;color:#2BA8E0;font-size:21px;font-weight:800">3</div><h3>잘 모르겠다면</h3><p>상담에서 전 과목 상태를 확인하고 우선순위를 함께 정해드립니다. 막연한 불안보다 정확한 확인이 먼저입니다.</p></div>
 </div>
 </div></section>
 
@@ -2158,9 +2170,9 @@ ${SUBJECTS.map(s => `<a class="card" href="/subjects/${s.slug}"><div class="ic">
 <span class="sec-tag">학년별 추천</span>
 <h2>학년별로 이런 조합을 추천해요</h2>
 <div class="grid g3">
-<div class="card"><div class="ic">🎒</div><h3>초등학생</h3><p>수학 연산·독서 습관이 최우선입니다. 수학 또는 국어 1과목으로 시작해 공부 습관을 만들고, 영어는 흥미 위주로 병행하는 조합이 좋습니다.</p></div>
-<div class="card"><div class="ic">📚</div><h3>중학생</h3><p>수학+영어 조합이 가장 많습니다. 고등 과정의 바탕이 되는 두 과목의 개념을 이 시기에 완성해야 고등에서 선택지가 넓어집니다.</p></div>
-<div class="card"><div class="ic">🎯</div><h3>고등학생</h3><p>내신 등급이 흔들리는 과목 1~2개에 집중 투자하세요. 수능 선택과목 전략까지 고려해 상담에서 우선순위를 잡아드립니다.</p></div>
+<div class="card"><div class="ic" style="background:#E7FAF0;color:#12C971;font-size:21px;font-weight:800">초</div><h3>초등학생</h3><p>수학 연산·독서 습관이 최우선입니다. 수학 또는 국어 1과목으로 시작해 공부 습관을 만들고, 영어는 흥미 위주로 병행하는 조합이 좋습니다.</p></div>
+<div class="card"><div class="ic" style="background:#E4F4FD;color:#2BA8E0;font-size:21px;font-weight:800">중</div><h3>중학생</h3><p>수학+영어 조합이 가장 많습니다. 고등 과정의 바탕이 되는 두 과목의 개념을 이 시기에 완성해야 고등에서 선택지가 넓어집니다.</p></div>
+<div class="card"><div class="ic" style="background:#F1EAFF;color:#8A57F5;font-size:21px;font-weight:800">고</div><h3>고등학생</h3><p>내신 등급이 흔들리는 과목 1~2개에 집중 투자하세요. 수능 선택과목 전략까지 고려해 상담에서 우선순위를 잡아드립니다.</p></div>
 </div>
 </div></section>
 
@@ -2206,7 +2218,7 @@ function subjectNationalPage(subj, url) {
   const entries = Object.entries(SIDO);
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">${subj.emoji} 과목수업</span>
+<span class="tagline">${dot(subj.tone)}과목수업</span>
 <h1>${subj.name}과외</h1>
 <p class="lead">${esc(subj.desc)}</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
@@ -2270,15 +2282,15 @@ ${ctaBlock(`${subj.name} 과외`)}`;
 
 function comingSoonPage(kind, url) {
   const map = {
-    'schools': { emoji: '🏫', h1: '학교별수업',
+    'schools': { h1: '학교별수업',
       lead: '우리 학교 시험 범위와 출제 유형에 맞춘 내신 대비 수업을 준비하고 있어요.' },
-    'others': { emoji: '🎨', h1: '기타수업',
+    'others': { h1: '기타수업',
       lead: '논술·면접·방학 특강 등 목표에 맞춘 특별 수업을 준비하고 있어요.' },
   };
   const v = map[kind];
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">${v.emoji} ${v.h1}</span>
+<span class="tagline">${dot()}${v.h1}</span>
 <h1>${v.h1} 준비 중이에요</h1>
 <p class="lead">${v.lead} 먼저 상담을 남겨주시면 오픈 시 가장 먼저 안내해 드릴게요.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">미리 상담 남기기 →</a><a href="/regions" class="btn btn-ghost">지역별수업 보기</a></div>
@@ -2525,7 +2537,7 @@ function schoolsHubPage(url) {
     `<a class="chip" href="/schools/region/${k}">${esc(v.full)}</a>`).join('');
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">🏫 학교별수업</span>
+<span class="tagline">${dot()}학교별수업</span>
 <h1>우리 학교 맞춤 내신 과외</h1>
 <p class="lead">같은 학년이어도 학교마다 시험이 다릅니다. 우리 학교 기출과 출제 스타일에 맞춘 내신 대비 수업을, 경력이 증명된 전문 선생님이 1:1로 진행합니다.</p>
 <div style="max-width:560px;position:relative">
@@ -2540,9 +2552,9 @@ function schoolsHubPage(url) {
 <h2>학교에 맞추면 내신이 달라집니다</h2>
 <p class="sub">같은 교과서를 써도 학교마다 시험이 다릅니다. 우리 학교 기준으로 준비하세요.</p>
 <div class="grid g3">
-<div class="card"><div class="ic">🎒</div><h3>초등학교</h3><p>학교 진도에 맞춘 기초 다지기와 단원평가·수행평가 관리, 중학교 입학 준비까지.</p></div>
-<div class="card"><div class="ic">📚</div><h3>중학교</h3><p>학교별 출제 스타일 분석, 시험 4주 플랜, 서술형·수행평가 대비.</p></div>
-<div class="card"><div class="ic">🎯</div><h3>고등학교</h3><p>내신 등급 방어와 수능 병행 전략, 선택과목·생기부 관리까지.</p></div>
+<div class="card"><div class="ic" style="background:#E7FAF0;color:#12C971;font-size:21px;font-weight:800">초</div><h3>초등학교</h3><p>학교 진도에 맞춘 기초 다지기와 단원평가·수행평가 관리, 중학교 입학 준비까지.</p></div>
+<div class="card"><div class="ic" style="background:#E4F4FD;color:#2BA8E0;font-size:21px;font-weight:800">중</div><h3>중학교</h3><p>학교별 출제 스타일 분석, 시험 4주 플랜, 서술형·수행평가 대비.</p></div>
+<div class="card"><div class="ic" style="background:#F1EAFF;color:#8A57F5;font-size:21px;font-weight:800">고</div><h3>고등학교</h3><p>내신 등급 방어와 수능 병행 전략, 선택과목·생기부 관리까지.</p></div>
 </div>
 </div></section>
 
@@ -2640,7 +2652,7 @@ function schoolsRegionPage(sido, url) {
   const keys = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'ko'));
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">🏫 학교별수업</span>
+<span class="tagline">${dot()}학교별수업</span>
 <h1>${esc(sido.full)} 학교별 과외</h1>
 <p class="lead">${esc(sido.full)} ${mine.length.toLocaleString()}개 초·중·고등학교의 내신 스타일에 맞춘 수업을 확인하세요.</p>
 <div class="cta-row"><a href="/schools" class="btn btn-ghost">← 학교 검색으로</a><a href="#contact" class="btn btn-primary">무료 상담 받기</a></div>
@@ -2713,7 +2725,7 @@ function schoolPage(sc, url) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">🏫 ${esc(region)}${reg ? ' ' + esc(reg.dong) : ''}</span>
+<span class="tagline">${dot()}${esc(region)}${reg ? ' ' + esc(reg.dong) : ''}</span>
 <h1>${esc(name)}<br><span style="color:var(--blue)">내신 대비 과외</span></h1>
 <p class="lead">${esc(name)} 시험은 ${esc(name)} 기준으로 준비해야 합니다. 학교 출제 스타일과 진도에 맞춘 1:1 수업으로 내신을 관리해 드려요.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="tel:01030388978" class="btn btn-ghost">📞 010-3038-8978</a></div>
@@ -2751,7 +2763,7 @@ ${GUIDES[subjSel[0].slug] ? `<p class="sub" style="max-width:760px">${sFill(pick
 ${subjSel.map((sj, i) => {
   const sg = GUIDES[sj.slug];
   const block = sg && sGrade && sg.grades[sGrade.gi] ? sg.grades[sGrade.gi] : null;
-  return block ? `<div class="faq" style="margin-bottom:14px"><h3><a href="/schools/${slug}/${sj.slug}" style="color:inherit;text-decoration:none">${sj.emoji} ${esc(block.t)}</a></h3><p style="margin-top:6px">${sFill(pick(block.b, sdk, 60 + i))}</p></div>` : '';
+  return block ? `<div class="faq" style="margin-bottom:14px"><h3><a href="/schools/${slug}/${sj.slug}" style="color:inherit;text-decoration:none">${dot(sj.tone, ';margin-right:8px')}${esc(block.t)}</a></h3><p style="margin-top:6px">${sFill(pick(block.b, sdk, 60 + i))}</p></div>` : '';
 }).join('')}
 </div></section>
 
@@ -2868,7 +2880,7 @@ function schoolSubjectPage(sc, subj, url) {
 
   const body = `
 <section class="hero"><div class="wrap">
-<span class="tagline">${subj.emoji} ${esc(region)} · ${esc(kindLabel)}</span>
+<span class="tagline">${dot(subj.tone)}${esc(region)} · ${esc(kindLabel)}</span>
 <h1>${esc(name)} ${subj.name} 내신 과외<br><span style="color:var(--blue)">시험 스타일 맞춤 대비</span></h1>
 <p class="lead">${pick([
   `${esc(name)} ${subj.name} 시험은 우리 학교 출제 스타일을 아는 것이 절반입니다. 학생이 가진 기출·프린트를 분석해 학교에 맞는 ${subj.name} 대비를 설계합니다.`,
@@ -3000,7 +3012,7 @@ function iconResponse(key) {
 
 /* ---------------- 본문 사진 (GitHub images 폴더) ---------------- */
 
-const PHOTO_COUNT = 42;
+const PHOTO_COUNT = 64;
 function photoUrl(seed) {
   const n = (pageHash(String(seed) + '#photo') % PHOTO_COUNT) + 1;
   return `/images/${n}.jpg`;
@@ -3008,7 +3020,7 @@ function photoUrl(seed) {
 // 이 사진은 h1 바로 뒤에 오는 첫 화면 요소라 대부분 LCP 대상이 된다.
 // lazy 로 두면 브라우저가 늦게 받아 LCP 가 그만큼 밀리므로 eager + 높은 우선순위로 받는다.
 function photoTag(seed, alt) {
-  return `<div class="wrap" style="margin:6px auto 0"><img src="${photoUrl(seed)}" alt="${esc(alt)}" width="1200" height="675" loading="eager" fetchpriority="high" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:860px;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:20px;display:block;margin:0 auto;box-shadow:0 18px 34px -22px rgba(35,39,65,.35)"></div>`;
+  return `<div class="wrap" style="margin:10px auto 0"><img src="${photoUrl(seed)}" alt="${esc(alt)}" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" onerror="this.parentNode.style.display='none'" style="width:100%;max-width:1080px;height:auto;aspect-ratio:16/9;object-fit:cover;border-radius:22px;display:block;margin:0 auto;box-shadow:0 22px 44px -24px rgba(35,39,65,.42)"></div>`;
 }
 
 
