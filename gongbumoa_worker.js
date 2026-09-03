@@ -1053,6 +1053,10 @@ const LESSON_FLOW = {
   ],
 };
 
+// 콘텐츠를 실제로 고쳐 배포한 날. RSS pubDate 등 날짜 신호의 기준이 된다.
+// 해시로 지어낸 날짜를 쓰면 실제 변경과 어긋나므로 사람이 직접 갱신한다.
+const CONTENT_UPDATED = '2026-09-03';
+
 const SITE = {
   name: '공부모아',
   // 도메인 사면 여기만 바꾸면 canonical/sitemap에 전부 반영됩니다.
@@ -3154,22 +3158,38 @@ ${subj}
 
     // 네이버 서치어드바이저 제출용 RSS
     if (path === '/rss.xml') {
+      // 네이버 서치어드바이저는 RSS 로 문서를 수집한다.
+      // item 마다 pubDate 가 있어야 신선도를 판단하므로 콘텐츠 갱신일을 넣는다.
+      const pub = new Date(CONTENT_UPDATED + 'T09:00:00+09:00').toUTCString();
       const now = new Date().toUTCString();
+      const xe = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const items = [
         { t: '지역별 과외 찾기', u: `${origin}/regions`, d: '전국 5,067개 지역에서 우리 동네 과외 선생님을 찾아보세요.' },
+        { t: '학교별 내신 과외', u: `${origin}/schools`, d: '전국 초·중·고 학교별 시험 스타일에 맞춘 내신 대비 수업 안내.' },
+        { t: '과목별 과외', u: `${origin}/subjects`, d: '수학·영어·국어·과학·사회·논술과 고등 선택과목까지 과목별 안내.' },
         ...SUBJECTS.map(s => ({ t: `${s.name}과외 | 학년별 공부법`, u: `${origin}/subjects/${s.slug}`, d: s.desc })),
-        ...Object.entries(SIDO).map(([k, v]) => ({ t: `${v.full} 과외`, u: `${origin}/${k}`, d: `${v.full} 전 지역 초·중·고 1:1 맞춤 과외` })),
+        ...Object.entries(SIDO).map(([k, v]) => ({ t: `${v.full} 과외`, u: `${origin}/${U(k)}`, d: `${v.full} 전 지역 초·중·고 1:1 맞춤 과외` })),
+        // 시군구 페이지도 함께 알린다. 지역이 넓은 곳 위주로 골라 수집 대상을 넓힌다.
+        ...Object.entries(SIDO).flatMap(([sk, sv]) =>
+          Object.entries(sv.sgg)
+            .sort((a, b) => b[1].l.length - a[1].l.length)
+            .slice(0, 3)
+            .map(([gk, gv]) => ({
+              t: `${gv.d} 과외 | ${sv.full}`,
+              u: `${origin}/${U(sk)}/${U(gk)}`,
+              d: `${sv.full} ${gv.d} ${gv.l.length}개 동네 초·중·고 1:1 맞춤 과외`,
+            }))),
       ];
       const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
-<title>${SITE.name}</title>
+<title>${xe(SITE.name)}</title>
 <link>${origin}</link>
-<description>${SITE.desc}</description>
+<description>${xe(SITE.desc)}</description>
 <language>ko</language>
 <lastBuildDate>${now}</lastBuildDate>
-${items.map(i => `<item><title>${i.t}</title><link>${i.u}</link><description>${i.d}</description><guid>${i.u}</guid></item>`).join('\n')}
+${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description>${xe(i.d)}</description><guid isPermaLink="true">${i.u}</guid><pubDate>${pub}</pubDate></item>`).join('\n')}
 </channel></rss>`;
-      return new Response(body, { headers: { 'content-type': 'application/rss+xml; charset=utf-8' } });
+      return new Response(body, { headers: { 'content-type': 'application/rss+xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
     }
 
     if (path === '/sitemap.xml') return xml(sitemapIndex(origin));
