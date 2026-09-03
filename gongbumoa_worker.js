@@ -1061,7 +1061,7 @@ const SITE = {
   name: '공부모아',
   // 도메인 사면 여기만 바꾸면 canonical/sitemap에 전부 반영됩니다.
   origin: 'https://gongbumoa.com',
-  desc: '전국 5,067개 지역의 초·중·고 1:1 맞춤 과외 수업 안내. 지역별·학교별·과목별 수업 정보를 확인하고 무료 상담을 받아보세요',
+  desc: '초·중·고 1:1 맞춤 과외. 경력이 증명된 전문 선생님이 집으로 찾아가 수업하고, 다니는 학교의 시험 유형에 맞춰 준비합니다',
   // 사이트 소유 확인 코드 (네이버 서치어드바이저 / 구글 서치콘솔에서 발급 후 붙여넣기)
   verifyNaver: '02237442fbd0f0a590037ef8def16e87eb9ca27f',
   verifyGoogle: '',
@@ -1471,13 +1471,41 @@ ${items.map(f => `<div class="faq"><h3>${esc(f.q)}</h3><p>${esc(f.a)}</p></div>`
 function regionSubjectPage({ sido, sgg, dong, subj, url }) {
   const place = dong ? dong.name : sgg.disp;
   const kindLabel = dong ? dong.kind : '지역';
-  const title = `${place} ${subj.name}과외 - 초·중·고 1:1 방문수업 | ${SITE.name}`;
+  // 이 지역(시군구) 실제 학교 목록 — 페이지 고유 데이터
+  schoolIndex();
+  const sggCode5 = sgg.list[0][1].slice(0, 5);
+  const sggSchools = SCHOOLS.filter(s => s[2].startsWith(sggCode5));
+  // 그 동에 실제로 있는 학교. 법정동코드가 정확히 일치하는 것만 고른다.
+  // 시군구 단위로만 뽑으면 이웃 동끼리 목록이 거의 같아져 페이지가 서로 닮는다.
+  const dongSchools = dong ? sggSchools.filter(s => s[2] === dong.code) : [];
+
+  // 제목 뒤를 일반 문구 대신 실제 지역·학교 이름으로 채운다.
+  // 롱테일 검색어(중계동 수학과외, 역삼중 수학과외)까지 함께 걸린다.
+  const shortSchool = n => String(n).replace(/(초등학교|중학교|고등학교)$/, m => m[0] === '초' ? '초' : m[0] === '중' ? '중' : '고');
+  const titleTail = (() => {
+    if (dong && dongSchools.length) {
+      // 이름이 짧은 학교부터 고른다. 긴 이름만 있으면 제목이 잘리므로 지역 문구로 넘어간다.
+      const names = dongSchools.map(x => shortSchool(x[0])).sort((x, y) => x.length - y.length);
+      const two = names.slice(0, 2).join('·');
+      if (names.length >= 2 && two.length <= 14) return `${two} 내신 맞춤수업`;
+      if (names[0].length <= 10) return `${names[0]} 내신 맞춤수업`;
+    }
+    if (!dong) {
+      const names = sgg.list.slice(0, 3).map(d => d[0]);
+      const t = names.join('·');
+      if (t.length <= 14) return `${t} 지역 맞춤수업`;
+      const t2 = names.slice(0, 2).join('·');
+      if (t2.length <= 12) return `${t2} 지역 맞춤수업`;
+    }
+    return `${sgg.disp} 방문·화상 1:1 수업`;
+  })();
+  const title = `${place} ${subj.name}과외 | ${titleTail} - ${SITE.name}`;
   const h1 = `${place} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
 
-  const desc = `${sido.full} ${sgg.disp} ${dong ? dong.name + ' ' : ''}${subj.name}과외. `
-    + `초·중·고 1:1 맞춤 수업으로 ${subj.name} 성적을 올려드립니다. 상담 후 아이에게 맞는 선생님을 안내해 드려요.`;
+  const desc = `${dong ? dong.name : sgg.disp} ${subj.name}과외 - 경력이 증명된 ${subj.name} 전문 선생님이 1:1로 수업합니다. `
+    + `${dong ? dong.name : sgg.disp} 학교 시험 범위에 맞춰 커리큘럼을 짜고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
 
   const siblings = rotate(sgg.list.filter(d => !dong || d[0] !== dong.name), pageHash((dong ? dong.code : sido.key + sgg.key) + subj.slug + '#sibsel')).slice(0, 14);
 
@@ -1526,13 +1554,6 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
       `가능합니다. 학원 진도를 따라가기 벅차거나 질문이 쌓여 있다면, 과외가 학원 수업을 소화하는 보조 엔진 역할을 합니다. 일정이 겹치지 않게 조율해 드리니 상담에서 학원 시간표를 알려주세요.`,
     ][acadV] + (subj.slug === 'english' ? ' 영어회화·원어민 회화 수업 문의도 함께 가능합니다.' : ' 필요하면 영어회화 등 다른 수업도 함께 안내해 드립니다.'),
   });
-  // 이 지역(시군구) 실제 학교 목록 — 페이지 고유 데이터
-  schoolIndex();
-  const sggCode5 = sgg.list[0][1].slice(0, 5);
-  const sggSchools = SCHOOLS.filter(s => s[2].startsWith(sggCode5));
-  // 그 동에 실제로 있는 학교. 법정동코드가 정확히 일치하는 것만 고른다.
-  // 시군구 단위로만 뽑으면 이웃 동끼리 목록이 거의 같아져 페이지가 서로 닮는다.
-  const dongSchools = dong ? sggSchools.filter(s => s[2] === dong.code) : [];
   const dongCodes = new Set(dongSchools.map(s => s[0]));
   const nearSchools = dongSchools
     .concat(rotate(sggSchools, pageHash(seedKey + subj.slug + '#sch')).filter(s => !dongCodes.has(s[0])))
@@ -1573,12 +1594,12 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
 <p class="lead">${pick([
   `${esc(place)}에서 ${subj.name} 때문에 고민이신가요? ${esc(subj.desc)} ${esc(place)} 인근에서 아이에게 맞는 선생님을 연결해 드립니다.`,
   `${esc(place)} 학생을 위한 1:1 ${subj.name} 수업입니다. ${esc(subj.desc)} 상담과 모의수업은 무료이고, 받아보신 뒤 시작 여부를 정하시면 됩니다.`,
-  `${esc(sgg.disp)} ${esc(place)}에서 ${subj.name} 선생님을 찾고 계신가요? 아이의 현재 상태를 먼저 확인하고, 딱 맞는 선생님을 연결해 드립니다.`,
+  `${esc(place)}에서 ${subj.name} 선생님을 찾고 계신가요? 경력이 증명된 ${subj.name} 전문 선생님이 아이의 현재 상태를 먼저 확인하고 수업 방향을 잡아드립니다.`,
 ], seedKey + subj.slug, 20)}</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="${parentPath}" class="btn btn-ghost">${esc(sgg.disp)} 전체 보기</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">1:1</div><div class="l">맞춤 수업</div></div>
-<div class="stat"><div class="n">${sgg.list.length}개</div><div class="l">${esc(sgg.disp)} 수업 ${kindLabel}</div></div>
+<div class="stat"><div class="n">방문·화상</div><div class="l">${esc(sgg.disp)} 수업 방식</div></div>
 <div class="stat"><div class="n">무료</div><div class="l">상담</div></div>
 </div>
 </div></section>
@@ -1665,12 +1686,12 @@ ${ctaBlock(place)}`;
 
 function regionGradeSubjectPage({ sido, sgg, dong, subj, grade, url }) {
   const place = dong ? dong.name : sgg.disp;
-  const title = `${place} ${grade.name} ${subj.name}과외 - 1:1 맞춤 내신수업 | ${SITE.name}`;
+  const title = `${place} ${grade.name} ${subj.name}과외 | ${grade.name === '초등' ? '초등학생' : grade.name === '중등' ? '중학생' : '고등학생'} 내신 1:1 맞춤수업 - ${SITE.name}`;
   const h1 = `${place} ${grade.name} ${subj.name}과외`;
   const parentPath = `/${U(sido.key)}/${U(sgg.key)}`;
   const basePath = dong ? `${parentPath}/${dong.slug}` : parentPath;
   const subjPath = `${basePath}/${subj.slug}`;
-  const desc = `${sido.full} ${sgg.disp} ${dong ? dong.name + ' ' : ''}${grade.name} ${subj.name}과외. ${grade.name} 학생에게 맞춘 1:1 수업으로 ${subj.name} 기초부터 내신까지 잡아드립니다. 학원 비교 상담 후 아이에게 맞는 선생님을 연결해 드려요.`;
+  const desc = `${dong ? dong.name : sgg.disp} ${grade.name} ${subj.name}과외 - ${grade.name} 지도 경력이 있는 전문 선생님이 1:1로 수업합니다. 기초부터 내신까지 학교 진도에 맞춰 잡아드리고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
 
   const seedKey = (dong ? dong.code : (sido.key + sgg.key)) + subj.slug + grade.slug;
   const sd = seedKey;
@@ -1863,15 +1884,23 @@ ${ctaBlock(`${place} ${grade.name}`)}`;
 /* ---------------- 페이지: 시군구 허브 ---------------- */
 
 function sggHubPage({ sido, sgg, url }) {
-  const title = `${sgg.disp} 과외 - 동네별 초·중·고 1:1 방문수업 | ${SITE.name}`;
-  const desc = `${sido.full} ${sgg.disp} 과외. ${sgg.list.length}개 지역에서 수학·영어·국어 등 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`;
+  const sggTail = (() => {
+    const names = sgg.list.slice(0, 3).map(d => d[0]);
+    const t = names.join('·');
+    if (t.length <= 14) return `${t} 지역 맞춤수업`;
+    const t2 = names.slice(0, 2).join('·');
+    if (t2.length <= 12) return `${t2} 지역 맞춤수업`;
+    return '동네별 방문·화상 1:1 수업';
+  })();
+  const title = `${sgg.disp} 과외 | ${sggTail} - ${SITE.name}`;
+  const desc = `${sgg.disp} 과외 - 경력이 증명된 전문 선생님이 집으로 찾아가 1:1로 수업합니다. ${sgg.disp} 학교의 시험 유형에 맞춰 준비하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
   const base = `/${U(sido.key)}/${U(sgg.key)}`;
 
   const body = `
 <section class="hero"><div class="wrap">
 <span class="tagline">📍 ${sido.full}</span>
 <h1>${esc(sgg.disp)} 과외</h1>
-<p class="lead">${esc(sgg.disp)} 전체 ${sgg.list.length}개 지역에서 1:1 맞춤 과외를 연결해 드립니다. 과목이나 동네를 골라 자세히 확인해 보세요.</p>
+<p class="lead">경력이 증명된 전문 선생님이 ${esc(sgg.disp)} 집으로 찾아가 1:1로 수업합니다. 다니는 학교의 시험 유형에 맞춰 준비하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
 
@@ -1910,7 +1939,7 @@ ${rotate(hg.problems, pageHash(hsd + sj.slug + '#p')).slice(0, 3).map(px => `<di
 
 ${faqBlock(rotate([
   { q: `${sgg.disp}에서는 어떤 과목 수업이 가능한가요?`, a: `초등부터 고등까지 전 과목이 가능합니다. 수학·영어·국어·과학·사회·논술은 물론 고등 선택과목도 해당 과목 전문 선생님이 수업합니다. 여러 과목을 함께 신청하시면 과목마다 선생님을 각각 안내하고 일정이 겹치지 않게 조율해 드립니다.` },
-  { q: `${sgg.disp} 전 지역 방문 수업이 되나요?`, a: `네, ${sgg.disp} ${sgg.list.length}개 지역 모두 방문 수업과 화상 수업이 가능합니다. 지역과 일정에 맞춰 선생님을 안내해 드려요.` },
+  { q: `${sgg.disp} 전 지역 방문 수업이 되나요?`, a: `네, ${sgg.disp} 전 지역에서 방문 수업과 화상 수업이 모두 가능합니다. 지역과 일정에 맞춰 선생님을 안내해 드려요.` },
   { q: `학원과 과외 중 무엇이 나을까요?`, a: `개념 구멍이 있거나 질문을 어려워하는 학생은 1:1 과외가, 경쟁 자극이 필요한 상위권은 학원 병행이 맞을 수 있습니다. 상담에서 객관적으로 안내해 드립니다.` },
   { q: `상담 후 꼭 시작해야 하나요?`, a: `아닙니다. 상담과 무료 모의수업으로 아이에게 맞는 수업인지 먼저 확인하시고, 그 뒤에 시작 여부를 편하게 결정하시면 됩니다.` },
 ], pageHash(sido.key + sgg.key + '#hfaq') % 5).slice(0, 5))}
@@ -1935,19 +1964,19 @@ function sidoHubPage({ sido, url }) {
   const sggs = Object.entries(sido.sgg);
   const total = sggs.reduce((a, [, v]) => a + v.l.length, 0);
   const title = `${sido.full} 과외 - 시군구별 초·중·고 1:1 맞춤수업 | ${SITE.name}`;
-  const desc = `${sido.full} 과외. ${sggs.length}개 시군구, ${total}개 지역에서 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`;
+  const desc = `${sido.full} 과외 - 경력이 증명된 전문 선생님이 방문 또는 화상으로 1:1 수업합니다. 초·중·고 전 과목과 고등 선택과목까지, 다니는 학교의 시험 유형에 맞춰 준비합니다.`;
 
   const body = `
 <section class="hero"><div class="wrap">
 <span class="tagline">📍 지역별수업</span>
 <h1>${esc(sido.full)} 과외</h1>
-<p class="lead">${esc(sido.full)} 전역 ${sggs.length}개 시군구, ${total}개 지역에서 수업이 가능합니다.</p>
+<p class="lead">경력이 증명된 전문 선생님이 ${esc(sido.full)} 전역에서 방문 또는 화상으로 1:1 수업합니다. 초·중·고 전 과목과 고등 선택과목까지, 다니는 학교의 시험 유형에 맞춰 준비합니다.</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a></div>
 </div></section>
 
 <section><div class="wrap">
 <span class="sec-tag">시군구</span><h2>${esc(sido.full)} 시군구별 과외</h2>
-<p class="sub">지역을 선택해 주세요.</p>
+<p class="sub">같은 ${esc(sido.full)} 안에서도 지역마다 다니는 학교와 시험 유형이 다릅니다. 우리 동네를 선택하시면 그 지역 학교 기준으로 준비한 수업 안내를 보실 수 있습니다.</p>
 <div class="linkcol">
 ${sggs.map(([k, v]) => `<a href="/${U(sido.key)}/${U(k)}">${esc(v.d)} 과외</a>`).join('')}
 </div>
@@ -1973,7 +2002,7 @@ ${rotate(hg.problems, pageHash(hsd + sj.slug + '#p')).slice(0, 3).map(px => `<di
 })()}
 
 ${faqBlock([
-  { q: `${sido.full} 전 지역에서 수업이 가능한가요?`, a: `네, ${sido.full} ${sggs.length}개 시군구 전 지역에서 방문 수업 또는 화상 수업이 가능합니다. 지역과 일정에 맞춰 선생님을 안내해 드려요.` },
+  { q: `${sido.full} 전 지역에서 수업이 가능한가요?`, a: `네, ${sido.full} 전 지역에서 방문 수업 또는 화상 수업이 가능합니다. 지역과 일정에 맞춰 선생님을 안내해 드려요.` },
   { q: `어떤 과목 수업이 가능한가요?`, a: `수학, 영어, 국어, 과학, 사회, 논술 전 과목이 가능하고, 영어회화 등 다른 수업 문의도 가능합니다. 학원 병행 여부까지 상담에서 함께 안내해 드립니다.` },
   { q: `상담 후 꼭 시작해야 하나요?`, a: `아닙니다. 상담과 무료 모의수업으로 아이에게 맞는 수업인지 먼저 확인하시고, 그 뒤에 시작 여부를 편하게 결정하시면 됩니다.` },
   { q: `선생님이 마음에 들지 않으면 어떻게 하나요?`, a: `수업 초반에 맞지 않는다고 느끼시면 다른 선생님과 만나보실 수 있습니다. 부담 없이 말씀해 주세요.` },
@@ -1999,7 +2028,7 @@ function regionRootPage(url) {
 <section class="hero"><div class="wrap">
 <span class="tagline">📍 지역별수업</span>
 <h1>우리 동네 과외 찾기</h1>
-<p class="lead">전국 ${total.toLocaleString()}개 지역에서 초·중·고 1:1 맞춤 과외를 연결해 드립니다. 시·도를 먼저 선택해 주세요.</p>
+<p class="lead">경력이 증명된 전문 선생님이 집으로 찾아가 초·중·고 1:1 수업을 합니다. 우리 동네를 찾으시면 그 지역 학교 기준으로 준비한 수업 안내를 보실 수 있습니다.</p>
 </div></section>
 
 <section><div class="wrap">
@@ -2007,7 +2036,7 @@ function regionRootPage(url) {
 <div class="grid g4">
 ${entries.map(([k, v]) => {
     const n = Object.values(v.sgg).reduce((b, s) => b + s.l.length, 0);
-    return `<a class="card" href="/${U(k)}"><div class="ic">📍</div><h3>${esc(v.full)}</h3><p>${Object.keys(v.sgg).length}개 시군구 · ${n}개 지역</p></a>`;
+    return `<a class="card" href="/${U(k)}"><div class="ic">📍</div><h3>${esc(v.full)}</h3><p>방문·화상 1:1 수업</p></a>`;
   }).join('')}
 </div>
 </div></section>
@@ -2038,7 +2067,7 @@ ${entries.map(([k, v]) => {
 </div></section>
 
 ${faqBlock([
-  { q: '우리 동네에도 선생님이 있나요?', a: '전국 시·도와 시군구 단위로 선생님을 연결하고 있습니다. 방문이 어려운 지역이라도 화상 수업으로 같은 커리큘럼을 진행할 수 있으니, 상담에서 지역과 희망 일정을 알려주세요.' },
+  { q: '우리 동네에도 선생님이 있나요?', a: '전국 시·도와 시군구 단위로 선생님을 연결하고 있습니다. 방문이 어려운 지역이라도 화상 수업으로 같은 커리큘럼을 진행할 수 있으니, 상담에서 지역과 희망 일정을 알려주세요. 가까운 선생님이 바로 없더라도 일정이 맞는 분을 찾아 안내해 드립니다.' },
   { q: '방문과 화상 중 어느 쪽이 나은가요?', a: '집중이 잘 흐트러지는 저학년이라면 방문이 유리하고, 이동 시간을 아껴 공부 시간을 확보해야 하는 고학년은 화상이 효율적일 수 있습니다. 평일은 화상, 주말은 방문처럼 섞어서 진행하는 경우도 많습니다.' },
   { q: '수업은 주 몇 회, 몇 분씩 하나요?', a: '주 1~2회, 회당 90~120분이 일반적이지만 학년과 목표, 다른 일정에 따라 조정합니다. 시험 기간에는 횟수를 늘리는 것도 가능합니다.' },
   { q: '선생님이 맞지 않으면 어떻게 하나요?', a: '초반에 맞지 않는다고 느끼시면 부담 없이 말씀해 주세요. 다른 선생님과 다시 만나보실 수 있습니다. 억지로 이어가는 것보다 맞는 선생님을 찾는 편이 결국 빠릅니다.' },
@@ -2047,8 +2076,8 @@ ${faqBlock([
 ${ctaBlock('전국 어디서나')}`;
 
   return page({
-    title: `지역별 과외 - 전국 ${total.toLocaleString()}개 동네 1:1 방문수업 | ${SITE.name}`,
-    desc: `전국 ${total.toLocaleString()}개 지역에서 수학·영어·국어 등 초·중·고 1:1 맞춤 과외를 연결해 드립니다.`,
+    title: `지역별 과외 - 우리 동네 1:1 방문·화상 수업 | ${SITE.name}`,
+    desc: `우리 동네 1:1 과외 - 경력이 증명된 전문 선생님이 집으로 찾아가 수업합니다. 수학·영어·국어부터 고등 선택과목까지, 다니는 학교의 시험 유형에 맞춰 준비합니다.`,
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업' }]),
     body,
@@ -2120,7 +2149,7 @@ ${faqBlock([
 ${ctaBlock('어떤 과목이든')}`;
   return page({
     title: `과목별 과외 - 수학·영어·국어·과학·사회 1:1 | ${SITE.name}`,
-    desc: '수학·영어·국어·과학·사회·논술 등 과목별 초·중·고 1:1 맞춤 과외.',
+    desc: '과목별 1:1 과외 - 수학·영어·국어·과학·사회·논술과 고등 선택과목까지, 과목마다 그 과목을 전문으로 하는 경력이 증명된 선생님이 수업합니다.',
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업' }]),
     body,
@@ -2446,7 +2475,7 @@ function schoolsHubPage(url) {
 <section class="hero"><div class="wrap">
 <span class="tagline">🏫 학교별수업</span>
 <h1>우리 학교 맞춤 내신 과외</h1>
-<p class="lead">전국 ${total}개 초·중·고등학교의 시험 스타일에 맞춘 내신 대비 수업. 학교 이름이나 지역(동네)을 검색해 보세요.</p>
+<p class="lead">같은 학년이어도 학교마다 시험이 다릅니다. 우리 학교 기출과 출제 스타일에 맞춘 내신 대비 수업을, 경력이 증명된 전문 선생님이 1:1로 진행합니다.</p>
 <div style="max-width:560px;position:relative">
   <input type="text" id="schoolQ" placeholder="학교 이름 또는 지역 검색 (예: 역삼, 분당구, 백현중)"
     style="width:100%;box-sizing:border-box;border:2px solid var(--blue);border-radius:16px;padding:16px 18px;font-size:16px;font-family:'Pretendard Variable','Pretendard';outline:none;background:#fff;box-shadow:var(--shadow-soft)">
@@ -2538,8 +2567,8 @@ ${ctaBlock('우리 학교 맞춤')}
 })();
 </script>`;
   return page({
-    title: `학교별 과외 | 전국 ${total}개 초·중·고 내신 맞춤 - ${SITE.name}`,
-    desc: `전국 ${total}개 초·중·고등학교의 출제 스타일에 맞춘 내신 대비 1:1 과외. 학교를 검색해 맞춤 수업을 확인하세요.`,
+    title: `학교별 과외 - 우리 학교 내신 1:1 대비 | ${SITE.name}`,
+    desc: `우리 학교 내신 과외 - 학교 기출과 출제 스타일을 분석해 대비합니다. 경력이 증명된 전문 선생님이 1:1로 수업하고, 수행평가 일정까지 함께 관리합니다.`,
     canonical: url,
     crumb: crumbs([{ name: '홈', url: '/' }, { name: '학교별수업' }]),
     body,
@@ -2585,9 +2614,9 @@ function schoolPage(sc, url) {
   const reg = schoolRegion(code);
   const kindLabel = KIND_LABEL[kind];
   const title = name.length > 10
-    ? `${name} 내신 과외 | ${SITE.name}`
-    : `${name} 내신 과외 - 1:1 시험대비 수업 | ${SITE.name}`;
-  const desc = `${region} ${name} 학생을 위한 내신 맞춤 1:1 과외. 학교 출제 스타일에 맞춘 시험 대비와 수행평가 관리까지, 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`;
+    ? `${name} 내신과외 | ${SITE.name}`
+    : `${name} 내신과외 | 학교 기출 맞춤 1:1 시험대비 - ${SITE.name}`;
+  const desc = `${name} 내신 과외 - 학교 기출과 프린트를 분석해 우리 학교 출제 방향에 맞춰 대비합니다. 경력이 증명된 전문 선생님이 1:1로 수업하고, 수행평가 일정까지 함께 관리합니다.`;
 
   // 같은 지역(시군구) 다른 학교
   const near = rotate(SCHOOLS.filter(s => s[3] === region && s[4] !== slug), pageHash(code + slug + '#near')).slice(0, 16);
@@ -2735,8 +2764,8 @@ function schoolSubjectPage(sc, subj, url) {
   const reg = schoolRegion(code);
   const title = name.length > 10
     ? `${name} ${subj.name}과외 | ${SITE.name}`
-    : `${name} ${subj.name}과외 - 내신 1:1 시험대비 | ${SITE.name}`;
-  const desc = `${region} ${name} 학생을 위한 ${subj.name} 내신 맞춤 1:1 과외. 학교 시험 스타일에 맞춘 ${subj.name} 대비와 수행평가 관리까지, 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`;
+    : `${name} ${subj.name}과외 | 학교 기출 맞춤 내신대비 - ${SITE.name}`;
+  const desc = `${name} ${subj.name}과외 - 학교 기출을 분석해 ${subj.name} 출제 방향에 맞춰 대비합니다. 경력이 증명된 ${subj.name} 전문 선생님이 1:1로 수업하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
 
   const sd = code + slug + subj.slug;
   const g = GUIDES[subj.slug];
@@ -3164,7 +3193,7 @@ ${subj}
       const now = new Date().toUTCString();
       const xe = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const items = [
-        { t: '지역별 과외 찾기', u: `${origin}/regions`, d: '전국 5,067개 지역에서 우리 동네 과외 선생님을 찾아보세요.' },
+        { t: '지역별 과외 찾기', u: `${origin}/regions`, d: '우리 동네로 찾아오는 1:1 방문 과외. 경력이 증명된 전문 선생님을 연결해 드립니다.' },
         { t: '학교별 내신 과외', u: `${origin}/schools`, d: '전국 초·중·고 학교별 시험 스타일에 맞춘 내신 대비 수업 안내.' },
         { t: '과목별 과외', u: `${origin}/subjects`, d: '수학·영어·국어·과학·사회·논술과 고등 선택과목까지 과목별 안내.' },
         ...SUBJECTS.map(s => ({ t: `${s.name}과외 | 학년별 공부법`, u: `${origin}/subjects/${s.slug}`, d: s.desc })),
@@ -3177,7 +3206,7 @@ ${subj}
             .map(([gk, gv]) => ({
               t: `${gv.d} 과외 | ${sv.full}`,
               u: `${origin}/${U(sk)}/${U(gk)}`,
-              d: `${sv.full} ${gv.d} ${gv.l.length}개 동네 초·중·고 1:1 맞춤 과외`,
+              d: `${sv.full} ${gv.d} 초·중·고 1:1 방문·화상 과외. 학교 시험 유형에 맞춘 맞춤 수업.`,
             }))),
       ];
       const body = `<?xml version="1.0" encoding="UTF-8"?>
