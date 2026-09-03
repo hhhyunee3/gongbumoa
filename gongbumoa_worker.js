@@ -1175,8 +1175,14 @@ const esc = s => String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;',
  * 공통 HTML 셸.
  */
 function page({ title, desc, canonical, crumb = '', body, jsonld, img = null, robots = 'index,follow,max-image-preview:large' }) {
-  const _lm = new Date((Math.floor(Date.now() / 86400000) - ((pageHash(canonical || title) % 35) + 2)) * 86400000);
-  const _lmKo = `${_lm.getFullYear()}년 ${_lm.getMonth() + 1}월 ${_lm.getDate()}일`;
+  // 콘텐츠를 실제로 고쳐 배포한 날짜를 쓴다.
+  // 이전에는 URL 해시로 "2~37일 전" 날짜를 만들어 내보냈는데, 같은 날 배포된
+  // 페이지가 서로 다른 날짜를 달고 실제 수정과도 무관해 신선도를 꾸며내는
+  // 신호가 됐다. 얻는 것 없이 위험만 있어 실제 갱신일로 바꾼다.
+  const _lm = new Date(CONTENT_UPDATED + 'T00:00:00+09:00');
+  // 워커는 UTC 로 도므로 Date 의 지역 게터를 쓰면 하루가 밀린다. 상수를 그대로 읽는다.
+  const [_ly, _lmo, _ld] = CONTENT_UPDATED.split('-');
+  const _lmKo = `${_ly}년 ${Number(_lmo)}월 ${Number(_ld)}일`;
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
