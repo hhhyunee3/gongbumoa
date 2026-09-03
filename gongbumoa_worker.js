@@ -1057,6 +1057,19 @@ const LESSON_FLOW = {
 // 해시로 지어낸 날짜를 쓰면 실제 변경과 어긋나므로 사람이 직접 갱신한다.
 const CONTENT_UPDATED = '2026-09-03';
 
+// 사이트맵에 넣을 계층.
+// 페이지 자체는 그대로 살아 있고 링크로도 닿는다. 여기서 빼는 것은
+// "적극적으로 알리지 않는다"는 뜻일 뿐이라 값만 되돌리면 즉시 복구된다.
+//
+// 21만 개를 한꺼번에 제출하면 크롤 예산이 얕게 퍼져 상위 페이지까지
+// 색인이 밀린다. 먼저 상위 계층을 확실히 색인시키고, Search Console 에서
+// 색인률이 올라오면 아래 값을 켜서 단계적으로 넓힌다.
+const SITEMAP_TIERS = {
+  gradePages: false,    // 동·시군구 + 과목 + 학년   (약 95,800개)
+  schoolSubject: false, // 학교 + 과목               (약 72,200개)
+};
+
+
 const SITE = {
   name: '공부모아',
   // 도메인 사면 여기만 바꾸면 canonical/sitemap에 전부 반영됩니다.
@@ -1555,6 +1568,13 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
     { q: `수업은 주 몇 회, 몇 분씩 하나요?`, a: `주 1~2회, 회당 90~120분이 일반적이지만 ${place} 학생의 학년과 목표에 따라 조정합니다. 시험 기간에는 횟수를 늘리는 것도 가능합니다.` },
     { q: `방문과 화상 중 어떤 방식이 효과적인가요?`, a: `집중력이 약한 저학년은 방문 수업을, 일정이 빡빡한 고학년은 화상 수업을 선호하는 편입니다. ${subj.name} 과목 특성과 학생 성향을 상담에서 함께 고려해 정해드립니다.` },
     { q: `형제·자매가 함께 수업받을 수 있나요?`, a: `학년과 진도가 비슷하면 함께 수업이 가능하고, 다르면 시간대를 이어서 잡아 이동 부담을 줄여드립니다. 상담 시 말씀해 주세요.` },
+    { q: `수업료는 어떻게 되나요?`, a: `학년과 과목, 수업 횟수에 따라 달라져 일률적으로 안내드리기 어렵습니다. 상담에서 ${place} 학생의 상황을 확인한 뒤 정확한 금액을 알려드리고, 30분 무료 모의수업까지는 비용이 들지 않습니다.` },
+    { q: `교재는 따로 준비해야 하나요?`, a: `학교 교과서와 이미 쓰던 문제집을 우선 활용합니다. 추가 교재가 필요하면 선생님이 학생 수준에 맞는 것을 골라 안내해 드리고, 무리하게 새 교재를 늘리지 않습니다.` },
+    { q: `숙제는 얼마나 나오나요?`, a: `혼자 푸는 시간이 있어야 실력이 붙기 때문에 숙제는 나갑니다. 다만 다른 일정과 충돌하지 않도록 양을 조절하고, 못 해온 이유를 확인해 다음 주 분량을 다시 잡습니다.` },
+    { q: `시험 기간에는 수업이 어떻게 되나요?`, a: `시험 범위와 일정에 맞춰 진도를 멈추고 대비로 전환합니다. 필요하면 횟수를 늘리기도 합니다. 다만 시험 기간에만 짧게 받는 단기 수업은 운영하지 않습니다.` },
+    { q: `아이가 과외를 부담스러워하는데 괜찮을까요?`, a: `억지로 시작하면 오래가지 못합니다. 그래서 30분 무료 모의수업으로 먼저 만나보게 합니다. 아이가 선생님과 편하게 이야기하는지 보고 정하셔도 늦지 않습니다.` },
+    { q: `성적이 오르기까지 얼마나 걸리나요?`, a: `출발점과 학습량에 따라 다릅니다. 개념 구멍을 메우는 단계라면 보통 한 학기 정도를 봅니다. 상담에서 ${place} 학생의 현재 상태를 확인한 뒤 현실적인 기간을 말씀드립니다.` },
+    { q: `선생님 성별을 고를 수 있나요?`, a: `희망을 말씀해 주시면 최대한 반영해 안내해 드립니다. 다만 지역과 일정, ${subj.name} 지도 경험을 함께 고려하다 보니 항상 맞춰드리지는 못할 수 있습니다.` },
   ];
   const faqs = rotate(faqPool, ph % faqPool.length).slice(0, 4);
   const acadV = pageHash(String(seedKey) + subj.slug + '#acad') % 3;
@@ -2329,12 +2349,16 @@ function sitemapSido(sidoKey, origin) {
     urls.push(base);
     for (const subj of SUBJECTS) {
       urls.push(`${base}/${subj.slug}`);
-      for (const gr of GRADE_LEVELS) urls.push(`${base}/${subj.slug}/${gr.slug}`);
+      if (SITEMAP_TIERS.gradePages) {
+        for (const gr of GRADE_LEVELS) urls.push(`${base}/${subj.slug}/${gr.slug}`);
+      }
     }
     for (const d of v.l) {
       for (const subj of SUBJECTS) {
         urls.push(`${base}/${d[3]}/${subj.slug}`);
-        for (const gr of GRADE_LEVELS) urls.push(`${base}/${d[3]}/${subj.slug}/${gr.slug}`);
+        if (SITEMAP_TIERS.gradePages) {
+          for (const gr of GRADE_LEVELS) urls.push(`${base}/${d[3]}/${subj.slug}/${gr.slug}`);
+        }
       }
     }
   }
@@ -3254,7 +3278,7 @@ ${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description
       const kindMap = { cho: '초', jung: '중', go: '고' };
       const urls = SCHOOLS.filter(s => s[1] === kindMap[schoolSm[1]]).flatMap(s => [
         `${origin}/schools/${s[4]}`,
-        ...SUBJECTS.map(sj => `${origin}/schools/${s[4]}/${sj.slug}`),
+        ...(SITEMAP_TIERS.schoolSubject ? SUBJECTS.map(sj => `${origin}/schools/${s[4]}/${sj.slug}`) : []),
       ]);
       urls.unshift(`${origin}/schools`);
       return xml(xmlUrlset(urls));
