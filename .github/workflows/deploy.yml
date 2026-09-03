@@ -21,4 +21,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # 액션 기본값은 wrangler 3.x 라 public/_headers 를 헤더 규칙이 아니라
+          # 그냥 정적 파일로 올린다. 그러면 /images/* 30일 캐시가 걸리지 않고
+          # /_headers 주소가 그대로 노출된다. 4.x 를 명시한다.
+          wranglerVersion: "4.129.0"
           command: deploy
