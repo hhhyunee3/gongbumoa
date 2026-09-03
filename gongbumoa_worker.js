@@ -1216,6 +1216,18 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
 </body></html>`;
 }
 
+// 화면에 보이는 경로와 같은 항목으로 BreadcrumbList 구조화 데이터를 만든다.
+// 이게 없으면 검색 결과에 경로 대신 URL 조각(gongbumoa.com > jeju)이 나온다.
+function crumbLd(items) {
+  return {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem', position: i + 1, name: it.name,
+      ...(it.url ? { item: SITE.origin + it.url } : {}),
+    })),
+  };
+}
+
 function crumbs(items) {
   const parts = items.map((it, i) =>
     i === items.length - 1
@@ -1946,14 +1958,16 @@ ${faqBlock(rotate([
 
 ${ctaBlock(sgg.disp)}`;
 
+  const BC = [
+    { name: '홈', url: '/' },
+    { name: '지역별수업', url: '/regions' },
+    { name: sido.full, url: `/${U(sido.key)}` },
+    { name: sgg.disp },
+  ];
   return page({
     title, desc, canonical: url,
-    crumb: crumbs([
-      { name: '홈', url: '/' },
-      { name: '지역별수업', url: '/regions' },
-      { name: sido.full, url: `/${U(sido.key)}` },
-      { name: sgg.disp },
-    ]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('region-hub') });
 }
@@ -2010,9 +2024,11 @@ ${faqBlock([
 
 ${ctaBlock(sido.full)}`;
 
+  const BC = [{ name: '홈', url: '/' }, { name: '지역별수업', url: '/regions' }, { name: sido.full }];
   return page({
     title, desc, canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업', url: '/regions' }, { name: sido.full }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('region-hub') });
 }
@@ -2075,11 +2091,13 @@ ${faqBlock([
 
 ${ctaBlock('전국 어디서나')}`;
 
+  const BC = [{ name: '홈', url: '/' }, { name: '지역별수업' }];
   return page({
     title: `지역별 과외 - 우리 동네 1:1 방문·화상 수업 | ${SITE.name}`,
     desc: `우리 동네 1:1 과외 - 경력이 증명된 전문 선생님이 집으로 찾아가 수업합니다. 수학·영어·국어부터 고등 선택과목까지, 다니는 학교의 시험 유형에 맞춰 준비합니다.`,
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '지역별수업' }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('region-hub') });
 }
@@ -2147,11 +2165,13 @@ ${faqBlock([
 </div></section>
 
 ${ctaBlock('어떤 과목이든')}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '과목수업' }];
   return page({
     title: `과목별 과외 - 수학·영어·국어·과학·사회 1:1 | ${SITE.name}`,
     desc: '과목별 1:1 과외 - 수학·영어·국어·과학·사회·논술과 고등 선택과목까지, 과목마다 그 과목을 전문으로 하는 경력이 증명된 선생님이 수업합니다.',
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업' }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('region-hub') });
 }
@@ -2209,11 +2229,13 @@ ${faqBlock([
 ])}
 
 ${ctaBlock(`${subj.name} 과외`)}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '과목수업', url: '/subjects' }, { name: `${subj.name}과외` }];
   return page({
     title: `${subj.name}과외 - 초·중·고 1:1 방문·화상 맞춤수업 | ${SITE.name}`,
     desc: `${subj.name}과외. ${subj.desc} 전국 어디서나 상담 후 아이에게 맞는 선생님을 연결해 드립니다.`,
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '과목수업', url: '/subjects' }, { name: `${subj.name}과외` }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('subject-' + subj.slug) });
 }
@@ -2566,11 +2588,13 @@ ${ctaBlock('우리 학교 맞춤')}
   q.addEventListener('focus',function(){ if(box.innerHTML) box.style.display='block'; });
 })();
 </script>`;
+  const BC = [{ name: '홈', url: '/' }, { name: '학교별수업' }];
   return page({
     title: `학교별 과외 - 우리 학교 내신 1:1 대비 | ${SITE.name}`,
     desc: `우리 학교 내신 과외 - 학교 기출과 출제 스타일을 분석해 대비합니다. 경력이 증명된 전문 선생님이 1:1로 수업하고, 수행평가 일정까지 함께 관리합니다.`,
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '학교별수업' }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('schools-hub') });
 }
@@ -2599,11 +2623,13 @@ ${groups[k].map(s => `<a href="/schools/${s[4]}">${esc(s[0])}</a>`).join('')}
 </div>
 </div></section>`).join('')}
 ${ctaBlock(sido.full + ' 학교')}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '학교별수업', url: '/schools' }, { name: sido.full }];
   return page({
     title: `${sido.full} 학교별 과외 | ${mine.length.toLocaleString()}개 학교 내신 맞춤 - ${SITE.name}`,
     desc: `${sido.full} ${mine.length.toLocaleString()}개 초·중·고등학교의 출제 스타일에 맞춘 내신 대비 1:1 과외.`,
     canonical: url,
-    crumb: crumbs([{ name: '홈', url: '/' }, { name: '학교별수업', url: '/schools' }, { name: sido.full }]),
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
     body,
     img: photoUrl('schools-hub') });
 }
