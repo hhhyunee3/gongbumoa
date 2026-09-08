@@ -3254,7 +3254,9 @@ export default {
         'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'CCBot', 'Amazonbot'];
       const body = `User-agent: *\nAllow: /\n\n`
         + bots.map(b => `User-agent: ${b}\nAllow: /`).join('\n\n')
-        + `\n\nSitemap: ${origin}/sitemap.xml\n`;
+        + `\n\nSitemap: ${origin}/sitemap.xml\n`
+        // 다음 웹마스터도구 소유 확인 PIN (2026-09-08)
+        + `\n#DaumWebMasterTool:d179ae290fdc21de9f97ea5e4bfac674a6323181fbebfda81b71e1c7135a7969:FreFgz7Szjm9AAoTfEznAQ==\n`;
       return new Response(body, { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     }
 
