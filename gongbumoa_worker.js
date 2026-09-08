@@ -92,7 +92,7 @@ const HOME_HTML = `<!DOCTYPE html>
   .nav-toggle{display:none;background:none;border:none;font-size:26px;cursor:pointer;color:var(--ink)}
 
   /* ---------- HERO ---------- */
-  .hero{padding:70px 0 90px;position:relative}
+  .hero{padding:70px 0 90px;position:relative;overflow-x:clip}
   .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
   .eyebrow{
     display:inline-flex;align-items:center;gap:8px;
