@@ -719,6 +719,24 @@ const HOME_HTML = `<!DOCTYPE html>
     document.getElementById('curriculum').scrollIntoView({behavior:'smooth'});
   });
 </script>
+<script>
+// 상담 버튼(#contact)을 누르면 같은 페이지의 상담 폼으로 부드럽게 이동하고 첫 입력칸에 커서를 둔다.
+(function(){
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href="#contact"]');
+    if (!a) return;
+    var t = document.getElementById('contact');
+    if (!t) return;
+    e.preventDefault();
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    try { history.replaceState(null, '', '#contact'); } catch (err) {}
+    setTimeout(function(){
+      var i = t.querySelector('input[type="text"], input:not([type="hidden"]):not([type="tel"])');
+      if (i) i.focus({ preventScroll: true });
+    }, 650);
+  });
+})();
+</script>
 </body>
 </html>
 `;
@@ -1100,6 +1118,7 @@ body{font-family:'Pretendard Variable','Pretendard',system-ui,sans-serif;backgro
 h1,h2,h3{font-weight:800;letter-spacing:-.03em}
 a{color:inherit;text-decoration:none}
 .wrap{width:min(1100px,92vw);margin:0 auto}
+#contact{scroll-margin-top:84px}
 header{position:sticky;top:0;z-index:50;background:rgba(251,250,246,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
 .brand{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:800}
@@ -1247,6 +1266,24 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
 <details class="foot-regions"><summary>지역별 과외</summary><div class="fr-list">${Object.entries(SIDO).map(([k, v]) => `<a href="/${U(k)}">${v.full} 과외</a>`).join('')}</div></details>
 <div class="copy">© 2026 ${SITE.name}. All rights reserved.</div>
 </div></footer>
+<script>
+// 상담 버튼(#contact)을 누르면 같은 페이지의 상담 폼으로 부드럽게 이동하고 첫 입력칸에 커서를 둔다.
+(function(){
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href="#contact"]');
+    if (!a) return;
+    var t = document.getElementById('contact');
+    if (!t) return;
+    e.preventDefault();
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    try { history.replaceState(null, '', '#contact'); } catch (err) {}
+    setTimeout(function(){
+      var i = t.querySelector('input[type="text"], input:not([type="hidden"]):not([type="tel"])');
+      if (i) i.focus({ preventScroll: true });
+    }, 650);
+  });
+})();
+</script>
 </body></html>`;
 }
 
