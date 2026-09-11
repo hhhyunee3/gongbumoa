@@ -12,6 +12,7 @@ gongbumoa/
 ├── gongbumoa_worker.js             사이트 전체 (홈 + 지역 페이지 + 라우팅)
 ├── regions.js                      법정동 데이터 5,067개 (자동 생성)
 ├── schools.js                      학교 데이터 (자동 생성)
+├── guides.js                       정보글 데이터 (/guide, /guide/<slug>) — 글 추가는 여기에 항목만 넣으면 목록·사이트맵·RSS 자동 반영
 └── wrangler.toml                   Cloudflare 설정
 ```
 

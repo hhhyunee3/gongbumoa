@@ -13,6 +13,7 @@
 
 import REGIONS from './regions.js';
 import SCHOOLS from './schools.js';
+import GUIDE_POSTS from './guides.js';
 
 /* ========== 홈페이지 ========== */
 const HOME_HTML = `<!DOCTYPE html>
@@ -350,6 +351,7 @@ const HOME_HTML = `<!DOCTYPE html>
       <a href="/schools">학교별수업</a>
       <a href="/subjects">과목수업</a>
       <a href="/others">기타수업</a>
+      <a href="/guide">정보글</a>
     </nav>
     <a href="#contact" class="btn btn-primary">무료 상담 받기</a>
     <button class="nav-toggle" aria-label="메뉴">☰</button>
@@ -631,6 +633,7 @@ const HOME_HTML = `<!DOCTYPE html>
         <b>바로가기</b>
         <a href="/regions">지역별수업</a>
         <a href="/subjects">과목수업</a>
+        <a href="/guide">정보글</a>
         <a href="#reviews">수강 후기</a>
       </div>
       <div>
@@ -1228,7 +1231,7 @@ ${jsonld ? (Array.isArray(jsonld) ? jsonld : [jsonld]).map(j => `<script type="a
 <header><div class="wrap nav">
 <a href="/" class="brand"><span class="mark">공</span>${SITE.name}</a>
 <nav class="nav-links">
-<a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a>
+<a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a><a href="/guide">정보글</a>
 </nav>
 <a href="#contact" class="btn btn-primary">무료 상담</a>
 </div></header>
@@ -1238,7 +1241,7 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
 <footer><div class="wrap">
 <div class="foot">
 <div><b>${SITE.name}</b>초·중·고 1:1 맞춤 과외<br>아이의 속도에 맞춰 함께 성장합니다.</div>
-<div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a></div>
+<div><b>수업</b><a href="/regions">지역별수업</a><a href="/schools">학교별수업</a><a href="/subjects">과목수업</a><a href="/others">기타수업</a><a href="/guide">정보글</a></div>
 <div><b>문의</b><a href="#contact">무료 상담</a><a href="tel:01030388978">전화 010-3038-8978</a></div>
 </div>
 <details class="foot-regions"><summary>지역별 과외</summary><div class="fr-list">${Object.entries(SIDO).map(([k, v]) => `<a href="/${U(k)}">${v.full} 과외</a>`).join('')}</div></details>
@@ -2364,6 +2367,109 @@ ${ctaBlock('특별 수업')}`;
 }
 
 
+/* ---------------- 페이지: 정보글 ---------------- */
+
+const GUIDE_CSS = `<style>
+.post{max-width:760px}
+.post h2{font-size:22px;margin:38px 0 12px;letter-spacing:-.02em}
+.post p{font-size:16.5px;line-height:1.85;color:var(--ink-soft);margin:0 0 14px}
+.post ul{margin:0 0 14px;padding-left:0;list-style:none}
+.post li{position:relative;padding:12px 0 12px 22px;border-bottom:1px solid var(--line);font-size:16px;line-height:1.75;color:var(--ink-soft)}
+.post li::before{content:"";position:absolute;left:4px;top:22px;width:7px;height:7px;border-radius:50%;background:var(--blue)}
+.post .lead-in{font-size:17px;line-height:1.85;color:var(--ink);margin-bottom:6px}
+.post-cta{background:var(--sky);border-radius:16px;padding:20px 22px;margin:34px 0 8px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.post-cta b{font-size:16px}
+.post-cta span{display:block;font-size:14px;color:var(--ink-soft);margin-top:4px}
+.gcard{display:block;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:var(--shadow-soft);text-decoration:none;color:inherit}
+.gcard h3{font-size:18px;margin:8px 0 8px;letter-spacing:-.02em}
+.gcard p{font-size:14.5px;line-height:1.7;color:var(--ink-soft);margin:0}
+.gcard .tags{font-size:12.5px;color:var(--blue-deep);font-weight:700}
+.gmeta{font-size:13px;color:#98938A;margin-top:10px}
+</style>`;
+
+function guideCard(g) {
+  return `<a class="gcard" href="/guide/${g.slug}"><span class="tags">${g.tags.slice(0, 3).map(esc).join(' · ')}</span><h3>${esc(g.h1)}</h3><p>${esc(g.desc)}</p><div class="gmeta">${g.date.replace(/-/g, '.')}</div></a>`;
+}
+
+function guideHubPage(url) {
+  const body = `${GUIDE_CSS}
+<section class="hero"><div class="wrap">
+<span class="tagline">${dot()}정보글</span>
+<h1>학생과 학부모가 궁금해하는 공부 이야기</h1>
+<p class="lead">시험 준비, 과목별 공부법, 과외 고르는 기준처럼 상담에서 자주 받는 질문을 글로 정리했습니다. 읽고 궁금한 점이 남으면 아래 상담 신청에 남겨 주세요.</p>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="/subjects" class="btn btn-ghost">과목수업 보기</a></div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">전체 글</span>
+<h2>${GUIDE_POSTS.length}개의 글</h2>
+<div class="grid g3">${GUIDE_POSTS.map(guideCard).join('')}</div>
+</div></section>
+
+${ctaBlock('공부 상담')}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '정보글' }];
+  return page({
+    title: `정보글 - 시험 준비·공부법·과외 고르는 법 | ${SITE.name}`,
+    desc: `학생과 학부모가 궁금해하는 시험 준비, 과목별 공부법, 과외와 학원 비교, 화상 과외 안내를 정리한 공부모아 정보글.`,
+    canonical: url,
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
+    body,
+    img: photoUrl('guide-hub') });
+}
+
+function guidePostPage(g, url) {
+  const secs = g.sections.map(sec => `<h2>${esc(sec.h)}</h2>${(sec.ps || []).map(t => `<p>${esc(t)}</p>`).join('')}${sec.ul ? `<ul>${sec.ul.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`).join('');
+  const others = rotate(GUIDE_POSTS.filter(x => x.slug !== g.slug), pageHash(g.slug)).slice(0, 3);
+  const body = `${GUIDE_CSS}
+<section class="hero"><div class="wrap">
+<span class="tagline">${dot()}정보글 · ${esc(g.tags[0])}</span>
+<h1>${esc(g.h1)}</h1>
+<p class="lead">${esc(g.desc)}</p>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">이 주제로 상담 받기 →</a><a href="/guide" class="btn btn-ghost">정보글 목록</a></div>
+</div></section>
+
+<section><div class="wrap"><div class="post">
+<p class="lead-in">${esc(g.intro)}</p>
+${secs}
+<div class="post-cta"><div><b>${esc(g.cta)} 고민, 상담에서 바로 확인해 보세요</b><span>아이의 현재 상태를 듣고 딱 맞는 선생님을 연결해 드립니다. 상담과 30분 모의수업은 무료입니다.</span></div><a href="#contact" class="btn btn-primary">무료 상담 신청</a></div>
+</div></div></section>
+
+${faqBlock(g.faq.map(([q, a]) => ({ q, a })))}
+
+<section><div class="wrap">
+<span class="sec-tag">관련 페이지</span>
+<h2>함께 보면 좋은 안내</h2>
+<div class="chips">${g.related.map(([label, href]) => `<a class="chip" href="${href}">${esc(label)}</a>`).join('')}</div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">다른 정보글</span>
+<h2>이런 글도 읽어 보세요</h2>
+<div class="grid g3">${others.map(guideCard).join('')}</div>
+</div></section>
+
+${ctaBlock(g.cta)}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '정보글', url: '/guide' }, { name: g.h1 }];
+  const jsonld = [{
+    '@context': 'https://schema.org', '@type': 'Article',
+    headline: g.h1, description: g.desc, datePublished: g.date, dateModified: CONTENT_UPDATED,
+    author: { '@type': 'Organization', name: SITE.name }, publisher: { '@type': 'Organization', name: SITE.name, url: SITE.origin },
+    mainEntityOfPage: url, keywords: g.tags.join(', '),
+  }, {
+    '@context': 'https://schema.org', '@type': 'FAQPage',
+    mainEntity: g.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+  }, crumbLd(BC)];
+  return page({
+    title: `${g.title} - ${SITE.name}`,
+    desc: g.desc,
+    canonical: url,
+    crumb: crumbs(BC),
+    jsonld,
+    body,
+    img: photoUrl('guide-' + g.slug) });
+}
+
 /* ---------------- 사이트맵 ---------------- */
 
 function xmlUrlset(urls) {
@@ -2390,6 +2496,7 @@ ${items.map(u => `<sitemap><loc>${u}</loc></sitemap>`).join('\n')}
 function sitemapMain(origin) {
   const plain = [
     `${origin}/regions`, `${origin}/subjects`, `${origin}/schools`, `${origin}/others`,
+    `${origin}/guide`, ...GUIDE_POSTS.map(g => `${origin}/guide/${g.slug}`),
     ...Object.keys(SIDO).map(k => `${origin}/schools/region/${k}`),
     ...Object.keys(SIDO).map(k => `${origin}/${U(k)}`),
   ];
@@ -3350,6 +3457,10 @@ ${subj}
 - 동+과목: ${origin}/seoul/gangnam-gu/yeoksam-dong/math (역삼동 수학과외)
 - 과목 슬러그: math(수학), english(영어), korean(국어), science(과학), social(사회), essay(논술)
 
+## 정보글
+- [정보글 목록](${origin}/guide): 시험 준비, 과목별 공부법, 과외·학원 비교, 화상 과외, 검정고시 등 학생·학부모용 안내 글.
+${GUIDE_POSTS.map(g => `- [${g.h1}](${origin}/guide/${g.slug})`).join('\n')}
+
 ## 콘텐츠
 각 지역 페이지는 해당 과목의 초·중·고 학년별 공부법, 자주 겪는 어려움과 해결법, 주간 학습 루틴, 시험 4주 대비 플랜, 성적대별 접근법, 과외 활용 안내를 담고 있다.
 
@@ -3371,6 +3482,7 @@ ${subj}
         { t: '학교별 내신 과외', u: `${origin}/schools`, d: '전국 중·고 학교별 시험 스타일에 맞춘 내신 대비 수업과 초등 학교 진도 맞춤 수업 안내.' },
         { t: '기타수업 | 논술·면접·화상 과외·검정고시', u: `${origin}/others`, d: '논술, 면접·자기소개서, 화상 과외, 검정고시까지 목표에 맞춘 특별 수업.' },
         { t: '과목별 과외', u: `${origin}/subjects`, d: '수학·영어·국어·과학·사회·논술과 고등 선택과목까지 과목별 안내.' },
+        ...GUIDE_POSTS.map(g => ({ t: g.h1, u: `${origin}/guide/${g.slug}`, d: g.desc, p: new Date(g.date + 'T09:00:00+09:00').toUTCString() })),
         ...SUBJECTS.map(s => ({ t: `${s.name}과외 | 학년별 공부법`, u: `${origin}/subjects/${s.slug}`, d: s.desc })),
         ...Object.entries(SIDO).map(([k, v]) => ({ t: `${v.full} 과외`, u: `${origin}/${U(k)}`, d: `${v.full} 전 지역 초·중·고 1:1 맞춤 과외` })),
         // 시군구 페이지도 함께 알린다. 지역이 넓은 곳 위주로 골라 수집 대상을 넓힌다.
@@ -3391,7 +3503,7 @@ ${subj}
 <description>${xe(SITE.desc)}</description>
 <language>ko</language>
 <lastBuildDate>${now}</lastBuildDate>
-${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description>${xe(i.d)}</description><guid isPermaLink="true">${i.u}</guid><pubDate>${pub}</pubDate></item>`).join('\n')}
+${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description>${xe(i.d)}</description><guid isPermaLink="true">${i.u}</guid><pubDate>${i.p || pub}</pubDate></item>`).join('\n')}
 </channel></rss>`;
       return new Response(body, { headers: { 'content-type': 'application/rss+xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
     }
@@ -3426,6 +3538,12 @@ ${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description
     }
 
     if (seg[0] === 'regions') return html(regionRootPage(origin + path));
+
+    if (seg[0] === 'guide') {
+      if (seg.length === 1) return html(guideHubPage(origin + path));
+      const g = seg.length === 2 && GUIDE_POSTS.find(x => x.slug === seg[1]);
+      return g ? html(guidePostPage(g, origin + path)) : notFound(origin);
+    }
 
     if (seg[0] === 'others' && seg.length === 1) {
       return html(othersPage(origin + path));
