@@ -63,6 +63,7 @@ const HOME_HTML = `<!DOCTYPE html>
   section{position:relative}
 
   /* ---------- NAV ---------- */
+  #contact{scroll-margin-top:84px}
   header{
     position:sticky;top:0;z-index:50;
     background:rgba(251,250,246,.82);
