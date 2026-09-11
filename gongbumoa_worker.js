@@ -1061,7 +1061,7 @@ const LESSON_FLOW = {
 
 // 콘텐츠를 실제로 고쳐 배포한 날. RSS pubDate 등 날짜 신호의 기준이 된다.
 // 해시로 지어낸 날짜를 쓰면 실제 변경과 어긋나므로 사람이 직접 갱신한다.
-const CONTENT_UPDATED = '2026-09-03';
+const CONTENT_UPDATED = '2026-09-11';
 
 // 사이트맵에 넣을 계층.
 // 페이지 자체는 그대로 살아 있고 링크로도 닿는다. 여기서 빼는 것은
@@ -1530,8 +1530,10 @@ function regionSubjectPage({ sido, sgg, dong, subj, url }) {
       // 이름이 짧은 학교부터 고른다. 긴 이름만 있으면 제목이 잘리므로 지역 문구로 넘어간다.
       const names = dongSchools.map(x => shortSchool(x[0])).sort((x, y) => x.length - y.length);
       const two = names.slice(0, 2).join('·');
-      if (names.length >= 2 && two.length <= 14) return `${two} 내신 맞춤수업`;
-      if (names[0].length <= 10) return `${names[0]} 내신 맞춤수업`;
+      // 초등학교만 있는 동은 내신이 없으므로 "학교 맞춤수업"으로 쓴다.
+      const tail = dongSchools.some(x => x[1] !== '초') ? '내신 맞춤수업' : '학교 맞춤수업';
+      if (names.length >= 2 && two.length <= 14) return `${two} ${tail}`;
+      if (names[0].length <= 10) return `${names[0]} ${tail}`;
     }
     if (!dong) {
       const names = sgg.list.slice(0, 3).map(d => d[0]);
@@ -1920,9 +1922,9 @@ ${gSiblings.map(d => `<a href="${parentPath}/${d[3]}/${subj.slug}/${grade.slug}"
 
 ${gSchools.length ? `<section><div class="wrap">
 <span class="sec-tag">인근 학교</span>
-<h2>${esc(sgg.disp)} ${grade.name === '초등' ? '초등학교' : grade.name === '중등' ? '중학교' : '고등학교'} ${subj.name} 내신</h2>
+<h2>${esc(sgg.disp)} ${grade.name === '초등' ? '초등학교' : grade.name === '중등' ? '중학교' : '고등학교'} ${subj.name} ${grade.name === '초등' ? '과외' : '내신'}</h2>
 <div class="linkcol">
-${gSchools.map(s => `<a href="/schools/${s[4]}/${subj.slug}">${esc(s[0])} ${subj.name} 내신</a>`).join('')}
+${gSchools.map(s => `<a href="/schools/${s[4]}/${subj.slug}">${esc(s[0])} ${subj.name} ${grade.name === '초등' ? '과외' : '내신'}</a>`).join('')}
 </div>
 </div></section>` : ''}
 
@@ -2307,6 +2309,65 @@ ${ctaBlock(v.h1)}`;
   });
 }
 
+/* ---------------- 페이지: 기타수업 ---------------- */
+
+function othersPage(url) {
+  const items = [
+    ['논술', '#FFF3D6', '#D9A400', '논', '독서·논술 기초부터 대입 논술까지',
+     '초등·중등은 책을 읽고 생각을 글로 옮기는 훈련부터, 고등은 대학별 논술 유형에 맞춘 답안 작성까지 단계별로 진행합니다. 학생이 쓴 글을 매번 첨삭하고, 다음 시간에 고쳐 쓰는 방식으로 실력이 쌓입니다.'],
+    ['면접·자기소개서', '#E4F4FD', '#2BA8E0', '면', '고입·대입 면접과 자소서',
+     '특목고·자사고 면접, 대입 학생부종합전형 면접과 자기소개서를 준비합니다. 학생의 생기부와 활동을 바탕으로 예상 질문을 뽑고, 실제처럼 답변하는 모의 면접을 반복합니다.'],
+    ['방학 특강', '#F1EAFF', '#8A57F5', '방', '겨울·여름방학 선행과 복습',
+     '방학은 학기 중에 밀린 부분을 메우고 다음 학기를 준비할 유일한 시간입니다. 학생 상태에 따라 복습 위주로 갈지, 선행을 어느 범위까지 할지 상담에서 정하고 방학 기간에 맞춘 단기 집중 계획으로 진행합니다.'],
+    ['시험 기간 단기 집중', '#E7FAF0', '#12C971', '단', '시험 3~4주 전 집중 대비',
+     '정규 수업이 아니어도 시험 기간에만 짧게 수업받을 수 있습니다. 시험 범위를 기준으로 개념 정리, 학교 기출·예상 문제, 오답 반복까지 3~4주 플랜으로 운영합니다.'],
+    ['화상 과외', '#FDECEC', '#E0574F', '화', '어디서나 같은 1:1 수업',
+     '방문이 어려운 지역이나 시간대에는 화상으로 진행합니다. 화면 공유와 필기 도구로 대면 수업과 같은 방식으로 풀이 과정을 함께 보며, 수업 후 과제와 피드백도 동일하게 관리합니다.'],
+    ['검정고시·학습 습관', '#EEF1F6', '#5B6079', '기', '개별 목표에 맞춘 수업',
+     '검정고시 준비, 학습 습관과 계획 세우기, 특정 단원만 집중 보강 같은 개별 목표도 상담 후 맞춤으로 구성합니다. 정해진 상품이 아니라 학생의 목표에서 출발합니다.'],
+  ];
+  const cards = items.map(([n, bg, fg, ch, sub, desc]) => `<div class="card"><div class="ic" style="background:${bg};color:${fg};font-size:20px;font-weight:800">${ch}</div><h3>${esc(n)}</h3><p><b>${esc(sub)}</b></p><p>${esc(desc)}</p></div>`).join('');
+  const body = `
+<section class="hero"><div class="wrap">
+<span class="tagline">${dot()}기타수업</span>
+<h1>목표에 맞춘 특별 수업</h1>
+<p class="lead">정규 과목 수업 외에도 논술, 면접·자기소개서, 방학 특강, 시험 기간 단기 집중, 화상 과외처럼 목표가 분명한 수업을 1:1로 진행합니다. 어떤 수업이 맞는지 모르셔도 괜찮아요. 상담에서 아이 상태를 듣고 함께 정합니다.</p>
+<div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기</a><a href="/subjects" class="btn btn-ghost">과목수업 보기</a></div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">수업 종류</span>
+<h2>이런 수업을 진행합니다</h2>
+<p class="sub">모두 1:1 맞춤 수업이며, 방문과 화상 중 선택할 수 있습니다.</p>
+<div class="grid g3">${cards}</div>
+</div></section>
+
+<section><div class="wrap">
+<span class="sec-tag">진행 방식</span><h2>상담에서 시작해 계획을 함께 세웁니다</h2>
+<p class="sub" style="max-width:780px">특별 수업은 기간이 짧고 목표가 분명한 만큼 첫 상담이 중요합니다. 아이의 현재 상태와 목표 시점(시험일, 면접일, 개학일)을 듣고, 몇 회를 어떤 순서로 진행할지 계획을 먼저 세운 뒤 선생님을 연결해 드립니다.</p>
+<p class="sub" style="max-width:780px">정규 과목 수업을 받고 있는 학생은 같은 선생님이 이어서 맡을 수도 있고, 논술이나 면접처럼 전문 분야는 해당 경력의 선생님을 별도로 안내해 드립니다.</p>
+</div></section>
+
+${faqBlock([
+  { q: '정규 수업 없이 특강만 받을 수 있나요?', a: '네. 시험 기간 단기 집중이나 방학 특강처럼 기간이 정해진 수업만 따로 받을 수 있습니다. 상담에서 목표와 기간을 알려주세요.' },
+  { q: '수업 횟수와 비용은 어떻게 정해지나요?', a: '목표와 기간에 따라 다릅니다. 상담에서 계획을 세운 뒤 횟수와 비용을 안내해 드리고, 확인 후 시작합니다.' },
+  { q: '논술이나 면접은 어느 학년부터 가능한가요?', a: '독서·논술은 초등부터, 면접·자기소개서는 고입을 앞둔 중3과 대입을 준비하는 고등학생이 주로 받습니다. 학년에 맞춰 내용을 조정합니다.' },
+  { q: '화상 수업도 방문 수업과 같은 선생님인가요?', a: '네. 같은 기준으로 선발된 선생님이 진행하며, 방문이 어려운 지역이나 시간대에 화상으로 진행합니다.' },
+])}
+
+${ctaBlock('특별 수업')}`;
+  const BC = [{ name: '홈', url: '/' }, { name: '기타수업' }];
+  return page({
+    title: `기타수업 - 논술·면접·방학 특강·시험 단기 집중 1:1 | ${SITE.name}`,
+    desc: `논술, 면접·자기소개서, 방학 특강, 시험 기간 단기 집중, 화상 과외까지 목표에 맞춘 1:1 특별 수업. 상담에서 아이 상태를 듣고 계획을 함께 세웁니다.`,
+    canonical: url,
+    crumb: crumbs(BC),
+    jsonld: crumbLd(BC),
+    body,
+    img: photoUrl('others') });
+}
+
+
 /* ---------------- 사이트맵 ---------------- */
 
 function xmlUrlset(urls) {
@@ -2332,7 +2393,7 @@ ${items.map(u => `<sitemap><loc>${u}</loc></sitemap>`).join('\n')}
 
 function sitemapMain(origin) {
   const plain = [
-    `${origin}/regions`, `${origin}/subjects`, `${origin}/schools`,
+    `${origin}/regions`, `${origin}/subjects`, `${origin}/schools`, `${origin}/others`,
     ...Object.keys(SIDO).map(k => `${origin}/schools/region/${k}`),
     ...Object.keys(SIDO).map(k => `${origin}/${U(k)}`),
   ];
@@ -2565,12 +2626,6 @@ function schoolsHubPage(url) {
 <div class="chips">${sidoLinks}</div>
 </div></section>
 
-${faqBlock([
-  { q: '우리 학교 기출문제를 갖고 계신가요?', a: '학교별 최근 출제 경향을 파악해 수업에 반영합니다. 학생이 가진 기출과 학교 프린트를 함께 분석해 이 학교 시험에 맞는 대비를 설계해 드려요.' },
-  { q: '학교가 검색에 없으면 어떻게 하나요?', a: '분교나 신설 학교는 목록에 없을 수 있습니다. 무료 상담으로 학교명을 알려주시면 동일하게 맞춤 수업을 진행해 드립니다.' },
-  { q: '같은 학교 학생을 여러 명 가르쳐 보셨나요?', a: '해당 학교 수업 경험이 있는 선생님이 지역에 계신 경우 우선 안내해 드립니다. 학교 시험 스타일을 아는 선생님이 붙으면 대비 효율이 크게 올라갑니다.' },
-  { q: '전학 예정인데 미리 준비할 수 있나요?', a: '네, 전학 갈 학교 기준으로 진도와 출제 경향을 맞춰 미리 준비할 수 있습니다. 상담에서 전학 시기를 알려주세요.' },
-])}
 
 <section><div class="wrap">
 <span class="sec-tag">왜 학교별인가</span><h2>같은 학년이어도 학교마다 시험이 다릅니다</h2>
@@ -2595,6 +2650,7 @@ ${faqBlock([
   { q: '같은 학교 수업 경험이 있는 선생님을 만날 수 있나요?', a: '가능하면 같은 학교나 인근 학교 수업 경험이 있는 선생님을 우선 안내해 드립니다. 없더라도 학생이 가진 기출과 학교 자료를 함께 분석해 대비 방향을 잡습니다.' },
   { q: '학교 기출이 없으면 대비가 어렵나요?', a: '기출이 있으면 정확도가 올라가지만 없어도 진행합니다. 교과서와 학교 프린트, 수업 중 강조된 부분을 기준으로 삼고, 첫 시험을 치른 뒤 그 결과를 분석해 다음 시험 대비를 조정합니다.' },
   { q: '내신과 수행평가를 같이 봐주시나요?', a: '함께 관리합니다. 지필 시험 대비와 함께 수행평가 일정도 챙겨드립니다.' },
+  { q: '전학 예정인데 미리 준비할 수 있나요?', a: '네, 전학 갈 학교 기준으로 진도와 출제 경향을 맞춰 미리 준비할 수 있습니다. 상담에서 전학 시기를 알려주세요.' },
   { q: '학년이 올라가도 같은 선생님과 계속할 수 있나요?', a: '가능합니다. 학교와 학생을 이미 아는 선생님이 이어서 맡는 편이 대비가 정확해집니다. 다만 학년이 올라가며 필요한 것이 달라지면 상담을 통해 커리큘럼을 다시 잡습니다.' },
 ])}
 
@@ -2681,10 +2737,14 @@ function schoolPage(sc, url) {
   const [name, kind, code, region, slug] = sc;
   const reg = schoolRegion(code);
   const kindLabel = KIND_LABEL[kind];
-  const title = name.length > 10
-    ? `${name} 내신과외 | ${SITE.name}`
-    : `${name} 내신과외 | 학교 기출 맞춤 1:1 시험대비 - ${SITE.name}`;
-  const desc = `${name} 내신 과외 - 학교 기출과 프린트를 분석해 우리 학교 출제 방향에 맞춰 대비합니다. 경력이 증명된 전문 선생님이 1:1로 수업하고, 수행평가 일정까지 함께 관리합니다.`;
+  // 초등학교는 내신(지필 등급)이 없으므로 "내신과외" 대신 "학교 진도 맞춤 과외"로 표현한다.
+  const isCho = kind === '초';
+  const title = isCho
+    ? (name.length > 10 ? `${name} 과외 | ${SITE.name}` : `${name} 과외 | 학교 진도 맞춤 1:1 수업 - ${SITE.name}`)
+    : (name.length > 10 ? `${name} 내신과외 | ${SITE.name}` : `${name} 내신과외 | 학교 기출 맞춤 1:1 시험대비 - ${SITE.name}`);
+  const desc = isCho
+    ? `${name} 학생 과외 - 학교 진도와 단원평가·수행평가에 맞춰 기초를 다지는 1:1 수업입니다. 경력이 증명된 전문 선생님이 아이 속도에 맞춰 가르치고, 중학교 준비까지 함께 계획합니다.`
+    : `${name} 내신 과외 - 학교 기출과 프린트를 분석해 우리 학교 출제 방향에 맞춰 대비합니다. 경력이 증명된 전문 선생님이 1:1로 수업하고, 수행평가 일정까지 함께 관리합니다.`;
 
   // 같은 지역(시군구) 다른 학교
   const near = rotate(SCHOOLS.filter(s => s[3] === region && s[4] !== slug), pageHash(code + slug + '#near')).slice(0, 16);
@@ -2709,7 +2769,7 @@ function schoolPage(sc, url) {
   ];
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Service',
-    serviceType: `${name} 내신 과외`, name: `${name} 내신 대비 과외`, description: desc,
+    serviceType: isCho ? `${name} 학생 과외` : `${name} 내신 과외`, name: isCho ? `${name} 학교 진도 맞춤 과외` : `${name} 내신 대비 과외`, description: desc,
     areaServed: { '@type': 'Place', name: region + (reg ? ' ' + reg.dong : '') },
     provider: { '@type': 'Organization', name: SITE.name, url: SITE.origin }, url,
   }, {
@@ -2726,8 +2786,10 @@ function schoolPage(sc, url) {
   const body = `
 <section class="hero"><div class="wrap">
 <span class="tagline">${dot()}${esc(region)}${reg ? ' ' + esc(reg.dong) : ''}</span>
-<h1>${esc(name)}<br><span style="color:var(--blue)">내신 대비 과외</span></h1>
-<p class="lead">${esc(name)} 시험은 ${esc(name)} 기준으로 준비해야 합니다. 학교 출제 스타일과 진도에 맞춘 1:1 수업으로 내신을 관리해 드려요.</p>
+<h1>${esc(name)}<br><span style="color:var(--blue)">${isCho ? '학교 진도 맞춤 과외' : '내신 대비 과외'}</span></h1>
+<p class="lead">${isCho
+  ? `${esc(name)} 학생은 ${esc(name)} 진도에 맞춰 공부해야 합니다. 학교 진도와 단원평가 기준으로 기초를 다지는 1:1 수업을 진행해요.`
+  : `${esc(name)} 시험은 ${esc(name)} 기준으로 준비해야 합니다. 학교 출제 스타일과 진도에 맞춘 1:1 수업으로 내신을 관리해 드려요.`}</p>
 <div class="cta-row"><a href="#contact" class="btn btn-primary">무료 상담 받기 →</a><a href="tel:01030388978" class="btn btn-ghost">📞 010-3038-8978</a></div>
 <div class="stat-row">
 <div class="stat"><div class="n">${kindLabel}</div><div class="l">학교급</div></div>
@@ -2736,7 +2798,7 @@ function schoolPage(sc, url) {
 </div>
 </div></section>
 
-${photoTag(sdk, `${name} 내신 공부`)}
+${photoTag(sdk, isCho ? `${name} 학생 공부` : `${name} 내신 공부`)}
 
 <section><div class="wrap">
 <span class="sec-tag">수업 방식</span>
@@ -2809,11 +2871,11 @@ ${faqBlock(rotate([
 ], sh % 8).slice(0, 6))}
 
 <section><div class="wrap">
-<span class="sec-tag">과목별 내신</span>
-<h2>${esc(name)} 과목별 내신 과외</h2>
-<p class="sub">과목마다 우리 학교 시험 스타일에 맞춘 대비 방법이 다릅니다. 과목을 선택해 확인해 보세요.</p>
+<span class="sec-tag">${isCho ? '과목별 수업' : '과목별 내신'}</span>
+<h2>${esc(name)} 과목별 ${isCho ? '' : '내신 '}과외</h2>
+<p class="sub">${isCho ? '과목마다 학교 진도에 맞춘 공부 방법이 다릅니다.' : '과목마다 우리 학교 시험 스타일에 맞춘 대비 방법이 다릅니다.'} 과목을 선택해 확인해 보세요.</p>
 <div class="linkcol">
-${SUBJECTS.map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} 내신 과외</a>`).join('')}
+${SUBJECTS.map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} ${isCho ? '' : '내신 '}과외</a>`).join('')}
 </div>
 </div></section>
 
@@ -2830,10 +2892,13 @@ function schoolSubjectPage(sc, subj, url) {
   const kindLabel = KIND_LABEL[kind];
   const grade = GRADE_BY_KIND[kind];
   const reg = schoolRegion(code);
+  const isCho = kind === '초';
   const title = name.length > 10
     ? `${name} ${subj.name}과외 | ${SITE.name}`
-    : `${name} ${subj.name}과외 | 학교 기출 맞춤 내신대비 - ${SITE.name}`;
-  const desc = `${name} ${subj.name}과외 - 학교 기출을 분석해 ${subj.name} 출제 방향에 맞춰 대비합니다. 경력이 증명된 ${subj.name} 전문 선생님이 1:1로 수업하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
+    : (isCho ? `${name} ${subj.name}과외 | 학교 진도 맞춤 1:1 수업 - ${SITE.name}` : `${name} ${subj.name}과외 | 학교 기출 맞춤 내신대비 - ${SITE.name}`);
+  const desc = isCho
+    ? `${name} ${subj.name}과외 - 학교 진도와 단원평가에 맞춰 ${subj.name} 기초를 다지는 1:1 수업입니다. 경력이 증명된 ${subj.name} 전문 선생님이 아이 속도에 맞춰 가르치고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`
+    : `${name} ${subj.name}과외 - 학교 기출을 분석해 ${subj.name} 출제 방향에 맞춰 대비합니다. 경력이 증명된 ${subj.name} 전문 선생님이 1:1로 수업하고, 30분 무료 모의수업으로 먼저 확인하실 수 있습니다.`;
 
   const sd = code + slug + subj.slug;
   const g = GUIDES[subj.slug];
@@ -2845,8 +2910,12 @@ function schoolSubjectPage(sc, subj, url) {
   const basePath = reg ? `/${reg.sido}/${reg.sgg}/${reg.dongSlug}` : null;
   const nearSame = rotate(SCHOOLS.filter(s2 => s2[3] === region && s2[4] !== slug && s2[1] === kind), pageHash(sd + '#near')).slice(0, 12);
   const ssFaqPool = [
-    { q: `${name} ${subj.name} 시험 스타일에 맞춰 수업하나요?`, a: `네. 학생이 가진 ${name} 기출과 프린트, 최근 출제 경향을 분석해 ${subj.name} 대비 방향을 정합니다. 같은 학교 수업 경험이 있는 선생님이 있으면 우선 안내해 드립니다.` },
-    { q: `${subj.name} 내신과 수행평가를 같이 봐주시나요?`, a: `함께 관리합니다. 지필 시험 대비와 함께 수행평가 일정도 챙겨드립니다.` },
+    isCho
+      ? { q: `${name} 진도에 맞춰 ${subj.name} 수업하나요?`, a: `네. ${name}의 실제 진도표와 교과서를 기준으로 그 주에 배운 내용을 그 주에 소화하도록 수업합니다. 같은 학교 학생을 가르친 경험이 있는 선생님이 있으면 우선 안내해 드립니다.` }
+      : { q: `${name} ${subj.name} 시험 스타일에 맞춰 수업하나요?`, a: `네. 학생이 가진 ${name} 기출과 프린트, 최근 출제 경향을 분석해 ${subj.name} 대비 방향을 정합니다. 같은 학교 수업 경험이 있는 선생님이 있으면 우선 안내해 드립니다.` },
+    isCho
+      ? { q: `${subj.name} 단원평가와 수행평가를 같이 봐주시나요?`, a: `함께 관리합니다. 단원평가 시기에 맞춰 해당 단원을 정리하고, 수행평가 준비도 챙겨드립니다.` }
+      : { q: `${subj.name} 내신과 수행평가를 같이 봐주시나요?`, a: `함께 관리합니다. 지필 시험 대비와 함께 수행평가 일정도 챙겨드립니다.` },
     { q: `${name} 학생인데 ${subj.name} 기초가 부족해요. 가능한가요?`, a: `가능합니다. 진단으로 어느 단원부터 끊겼는지 찾아 이전 과정 보충과 학교 진도 대비를 병행합니다. 기초가 흔들릴수록 1:1 수업의 효과가 큽니다.` },
     { q: `${subj.name} 학원에 다니는데 과외를 병행해도 되나요?`, a: `학원 진도를 소화하기 벅차거나 질문이 쌓여 있다면 병행이 효과적입니다. ${name} 일정과 학원 시간표에 맞춰 조율해 드리니 상담에서 알려주세요.` },
     { q: `방문과 화상 중 선택할 수 있나요?`, a: `네, ${region} 지역 방문 수업과 화상 수업 모두 가능합니다. 학생 일정과 성향에 맞춰 정하시면 됩니다.` },
@@ -2858,11 +2927,11 @@ function schoolSubjectPage(sc, subj, url) {
     { name: '홈', url: '/' },
     { name: '학교별수업', url: '/schools' },
     { name: name, url: `/schools/${slug}` },
-    { name: `${subj.name} 내신` },
+    { name: isCho ? `${subj.name} 과외` : `${subj.name} 내신` },
   ];
   const jsonld = [{
     '@context': 'https://schema.org', '@type': 'Service',
-    serviceType: `${name} ${subj.name} 내신 과외`, name: `${name} ${subj.name} 내신 과외`, description: desc,
+    serviceType: isCho ? `${name} ${subj.name} 과외` : `${name} ${subj.name} 내신 과외`, name: isCho ? `${name} ${subj.name} 과외` : `${name} ${subj.name} 내신 과외`, description: desc,
     areaServed: { '@type': 'Place', name: region + (reg ? ' ' + reg.dong : '') },
     audience: { '@type': 'EducationalAudience', educationalRole: 'student', audienceType: `${kindLabel} 재학생` },
     provider: { '@type': 'Organization', name: SITE.name, url: SITE.origin }, url,
@@ -2881,8 +2950,12 @@ function schoolSubjectPage(sc, subj, url) {
   const body = `
 <section class="hero"><div class="wrap">
 <span class="tagline">${dot(subj.tone)}${esc(region)} · ${esc(kindLabel)}</span>
-<h1>${esc(name)} ${subj.name} 내신 과외<br><span style="color:var(--blue)">시험 스타일 맞춤 대비</span></h1>
-<p class="lead">${pick([
+<h1>${esc(name)} ${subj.name} ${isCho ? '과외' : '내신 과외'}<br><span style="color:var(--blue)">${isCho ? '학교 진도 맞춤 수업' : '시험 스타일 맞춤 대비'}</span></h1>
+<p class="lead">${isCho ? pick([
+  `${esc(name)} ${subj.name}은 학교 진도를 따라가는 것보다 그 진도를 소화할 기초를 만드는 것이 핵심입니다. ${esc(name)} 진도표 기준으로 그 주에 배운 것을 그 주에 소화하는 1:1 수업을 진행합니다.`,
+  `${esc(name)} 재학생을 위한 ${subj.name} 1:1 수업입니다. 학교 진도와 단원평가 시기에 맞춰 커리큘럼을 짜고, 상담 후 선생님을 연결해 드립니다.`,
+  `${esc(name)} ${subj.name}, 진도만 쫓는 공부로는 기초가 남지 않습니다. 학교 진도에 맞춘 기초 다지기부터 중학교 준비까지, 아이 속도에 맞춰 준비합니다.`,
+], sd, 50) : pick([
   `${esc(name)} ${subj.name} 시험은 우리 학교 출제 스타일을 아는 것이 절반입니다. 학생이 가진 기출·프린트를 분석해 학교에 맞는 ${subj.name} 대비를 설계합니다.`,
   `${esc(name)} 재학생을 위한 ${subj.name} 1:1 내신 수업입니다. 학교 진도와 시험 범위 기준으로 커리큘럼을 짜고, 상담 후 선생님을 연결해 드립니다.`,
   `${esc(name)} ${subj.name} 내신, 범위만 보는 공부로는 부족합니다. 학교 기출 스타일 분석부터 서술형 대비까지, 우리 학교 기준으로 준비합니다.`,
@@ -2899,7 +2972,7 @@ ${photoTag(sd, `${name} ${subj.name} 공부하는 학생`)}
 
 <section><div class="wrap">
 <span class="sec-tag">수업 방식</span>
-<h2>${esc(name)} ${subj.name} 내신, 이렇게 수업해요</h2>
+<h2>${esc(name)} ${subj.name}${isCho ? ' 과외' : ' 내신'}, 이렇게 수업해요</h2>
 <div class="grid g4">
 <div class="step"><div class="n">1</div><h3>상담신청</h3><p>${pick([`${esc(name)} 학생의 ${subj.name} 고민을 남겨주시면 연락드려요.`, `현재 상태와 목표를 알려주시면 검토 후 안내드립니다.`, `무엇이 막혀 있는지 편하게 말씀해 주세요.`], sd, 95)}</p></div>
 <div class="step"><div class="n">2</div><h3>선생님 안내</h3><p>${pick([`${esc(name)} 또는 인근 학교 수업 경험자를 우선 연결합니다.`, `상담 내용과 아이 성향에 맞는 선생님을 안내해 드립니다.`, `${esc(region)} 방문·화상 가능한 선생님을 찾아드려요.`], sd, 96)}</p></div>
@@ -2958,7 +3031,7 @@ ${(() => {
   if (!sgd) return '';
   const sgSels = rotate(sgd, pageHash(sd + '#sg2')).slice(0, 2);
   return `<section><div class="wrap">
-<span class="sec-tag">${esc(kindLabel)} 내신 관리</span>
+<span class="sec-tag">${esc(kindLabel)} ${isCho ? '학습' : '내신'} 관리</span>
 <h2>${esc(name)} 학생의 학교 공부 관리법</h2>
 ${sgSels.map((x, i) => `<div class="faq" style="margin-bottom:14px"><h3>${esc(x[0])}</h3><p style="margin-top:6px">${esc(pick(x[1], sd, 100 + i))}</p></div>`).join('')}
 </div></section>`;
@@ -2968,17 +3041,17 @@ ${faqBlock(ssFaqs)}
 
 ${nearSame.length ? `<section><div class="wrap">
 <span class="sec-tag">주변 학교</span>
-<h2>${esc(region)} 다른 ${esc(kindLabel)} ${subj.name} 내신</h2>
+<h2>${esc(region)} 다른 ${esc(kindLabel)} ${subj.name} ${isCho ? '과외' : '내신'}</h2>
 <div class="linkcol">
-${nearSame.map(s2 => `<a href="/schools/${s2[4]}/${subj.slug}">${esc(s2[0])} ${subj.name} 내신</a>`).join('')}
+${nearSame.map(s2 => `<a href="/schools/${s2[4]}/${subj.slug}">${esc(s2[0])} ${subj.name} ${isCho ? '과외' : '내신'}</a>`).join('')}
 </div>
 </div></section>` : ''}
 
 <section><div class="wrap">
 <span class="sec-tag">다른 과목</span>
-<h2>${esc(name)} 다른 과목 내신 과외</h2>
+<h2>${esc(name)} 다른 과목 ${isCho ? '' : '내신 '}과외</h2>
 <div class="linkcol">
-${SUBJECTS.filter(s => s.slug !== subj.slug).map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} 내신 과외</a>`).join('')}
+${SUBJECTS.filter(s => s.slug !== subj.slug).map(s => `<a href="/schools/${slug}/${s.slug}">${esc(name)} ${s.name} ${isCho ? '' : '내신 '}과외</a>`).join('')}
 ${basePath ? `<a href="${basePath}/${subj.slug}">${esc(reg.dong)} ${subj.name}과외 전체 보기</a>` : ''}
 </div>
 </div></section>
@@ -3299,7 +3372,8 @@ ${subj}
       const xe = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const items = [
         { t: '지역별 과외 찾기', u: `${origin}/regions`, d: '우리 동네로 찾아오는 1:1 방문 과외. 경력이 증명된 전문 선생님을 연결해 드립니다.' },
-        { t: '학교별 내신 과외', u: `${origin}/schools`, d: '전국 초·중·고 학교별 시험 스타일에 맞춘 내신 대비 수업 안내.' },
+        { t: '학교별 내신 과외', u: `${origin}/schools`, d: '전국 중·고 학교별 시험 스타일에 맞춘 내신 대비 수업과 초등 학교 진도 맞춤 수업 안내.' },
+        { t: '기타수업 | 논술·면접·방학 특강·시험 단기 특강', u: `${origin}/others`, d: '논술, 면접·자기소개서, 방학 특강, 시험 기간 단기 집중, 화상 과외까지 목표에 맞춘 특별 수업.' },
         { t: '과목별 과외', u: `${origin}/subjects`, d: '수학·영어·국어·과학·사회·논술과 고등 선택과목까지 과목별 안내.' },
         ...SUBJECTS.map(s => ({ t: `${s.name}과외 | 학년별 공부법`, u: `${origin}/subjects/${s.slug}`, d: s.desc })),
         ...Object.entries(SIDO).map(([k, v]) => ({ t: `${v.full} 과외`, u: `${origin}/${U(k)}`, d: `${v.full} 전 지역 초·중·고 1:1 맞춤 과외` })),
@@ -3358,7 +3432,7 @@ ${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description
     if (seg[0] === 'regions') return html(regionRootPage(origin + path));
 
     if (seg[0] === 'others' && seg.length === 1) {
-      return html(comingSoonPage('others', origin + path));
+      return html(othersPage(origin + path));
     }
 
     if (seg[0] === 'schools') {
