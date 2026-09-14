@@ -1143,7 +1143,8 @@ const CONTENT_UPDATED = '2026-09-11';
 // 색인이 밀린다. 먼저 상위 계층을 확실히 색인시키고, Search Console 에서
 // 색인률이 올라오면 아래 값을 켜서 단계적으로 넓힌다.
 const SITEMAP_TIERS = {
-  gradePages: false,    // 동·시군구 + 과목 + 학년   (약 95,800개)
+  gradePagesSgg: true,  // 시군구 + 과목 + 학년      (약 4,600개)  — 2026-09-14 켬. 색인 1만 넘으면 동 단위 검토
+  gradePages: false,    // 동 + 과목 + 학년          (약 91,000개)
   schoolSubject: false, // 학교 + 과목               (약 72,200개)
 };
 
@@ -2669,7 +2670,7 @@ function sitemapSido(sidoKey, origin) {
     urls.push(base);
     for (const subj of SUBJECTS) {
       urls.push(`${base}/${subj.slug}`);
-      if (SITEMAP_TIERS.gradePages) {
+      if (SITEMAP_TIERS.gradePagesSgg || SITEMAP_TIERS.gradePages) {
         for (const gr of GRADE_LEVELS) urls.push(`${base}/${subj.slug}/${gr.slug}`);
       }
     }
