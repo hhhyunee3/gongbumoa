@@ -738,6 +738,56 @@ const HOME_HTML = `<!DOCTYPE html>
   });
 })();
 </script>
+<!-- 데스크톱 전화 안내창: 컴퓨터에서 전화 링크를 누르면 번호를 크게 보여주고 전화 걸기/번호 복사를 고르게 한다. 휴대폰은 바로 전화. -->
+<style>
+.callmodal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(35,39,65,.55);padding:24px}
+.callmodal.on{display:flex}
+.callmodal .box{background:#fff;color:var(--ink,#232741);width:100%;max-width:400px;padding:30px 26px 24px;border-radius:24px;box-shadow:0 30px 60px -20px rgba(35,39,65,.45);text-align:left}
+.callmodal .box small{display:block;font-size:13px;font-weight:800;color:var(--blue-deep,#0AA35A)}
+.callmodal .num{display:block;margin:8px 0 6px;font-size:36px;font-weight:900;letter-spacing:-.03em;line-height:1.1}
+.callmodal .who{font-size:14.5px;color:var(--ink-soft,#5B6079);margin:0 0 20px;line-height:1.6}
+.callmodal .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.callmodal .acts a,.callmodal .acts button{display:flex;align-items:center;justify-content:center;height:50px;font:inherit;font-weight:800;font-size:15px;border:0;border-radius:999px;cursor:pointer;text-decoration:none}
+.callmodal .acts a.go{background:var(--blue,#10C46E);color:#fff}
+.callmodal .acts button.copy{background:var(--yellow,#FFC93C);color:var(--ink,#232741)}
+.callmodal .acts .close{grid-column:1/-1;background:#F3F1EA;color:var(--ink-soft,#5B6079);height:44px}
+.callmodal .copied{font-size:13px;color:var(--blue-deep,#0AA35A);font-weight:700;margin-top:10px;min-height:16px}
+</style>
+<div class="callmodal" id="callmodal" role="dialog" aria-modal="true" aria-labelledby="callmodal-num">
+  <div class="box">
+    <small>공부모아 상담 전화</small>
+    <b class="num" id="callmodal-num">010-3038-8978</b>
+    <p class="who">아이의 학년과 과목을 말씀해 주시면 딱 맞는 선생님을 안내해 드려요. 통화가 어려우면 아래 상담 신청을 남겨주세요.</p>
+    <div class="acts">
+      <a class="go" href="tel:01030388978" data-direct="1">전화 걸기</a>
+      <button type="button" class="copy" id="callmodal-copy">번호 복사</button>
+      <button type="button" class="close" id="callmodal-close">닫기</button>
+    </div>
+    <div class="copied" id="callmodal-msg"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var m=document.getElementById('callmodal'); if(!m) return;
+  var isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&innerWidth<900);
+  function open(){ m.classList.add('on'); document.getElementById('callmodal-msg').textContent=''; }
+  function close(){ m.classList.remove('on'); }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="tel:"]'); if(!a) return;
+    if(a.getAttribute('data-direct')||isMobile) return;
+    e.preventDefault(); open();
+  });
+  document.getElementById('callmodal-close').addEventListener('click',close);
+  m.addEventListener('click',function(e){ if(e.target===m) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+  document.getElementById('callmodal-copy').addEventListener('click',function(){
+    var msg=document.getElementById('callmodal-msg');
+    function done(){ msg.textContent='번호를 복사했어요. 010-3038-8978'; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText('010-3038-8978').then(done,function(){ msg.textContent='010-3038-8978 을 직접 입력해 주세요.'; }); }
+    else { msg.textContent='010-3038-8978 을 직접 입력해 주세요.'; }
+  });
+})();
+</script>
 </body>
 </html>
 `;
@@ -1282,6 +1332,56 @@ ${crumb ? consultFormBlock(String(title).split(' | ')[0].split(' - ')[0], region
       var i = t.querySelector('input[type="text"], input:not([type="hidden"]):not([type="tel"])');
       if (i) i.focus({ preventScroll: true });
     }, 650);
+  });
+})();
+</script>
+<!-- 데스크톱 전화 안내창: 컴퓨터에서 전화 링크를 누르면 번호를 크게 보여주고 전화 걸기/번호 복사를 고르게 한다. 휴대폰은 바로 전화. -->
+<style>
+.callmodal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(35,39,65,.55);padding:24px}
+.callmodal.on{display:flex}
+.callmodal .box{background:#fff;color:var(--ink,#232741);width:100%;max-width:400px;padding:30px 26px 24px;border-radius:24px;box-shadow:0 30px 60px -20px rgba(35,39,65,.45);text-align:left}
+.callmodal .box small{display:block;font-size:13px;font-weight:800;color:var(--blue-deep,#0AA35A)}
+.callmodal .num{display:block;margin:8px 0 6px;font-size:36px;font-weight:900;letter-spacing:-.03em;line-height:1.1}
+.callmodal .who{font-size:14.5px;color:var(--ink-soft,#5B6079);margin:0 0 20px;line-height:1.6}
+.callmodal .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.callmodal .acts a,.callmodal .acts button{display:flex;align-items:center;justify-content:center;height:50px;font:inherit;font-weight:800;font-size:15px;border:0;border-radius:999px;cursor:pointer;text-decoration:none}
+.callmodal .acts a.go{background:var(--blue,#10C46E);color:#fff}
+.callmodal .acts button.copy{background:var(--yellow,#FFC93C);color:var(--ink,#232741)}
+.callmodal .acts .close{grid-column:1/-1;background:#F3F1EA;color:var(--ink-soft,#5B6079);height:44px}
+.callmodal .copied{font-size:13px;color:var(--blue-deep,#0AA35A);font-weight:700;margin-top:10px;min-height:16px}
+</style>
+<div class="callmodal" id="callmodal" role="dialog" aria-modal="true" aria-labelledby="callmodal-num">
+  <div class="box">
+    <small>공부모아 상담 전화</small>
+    <b class="num" id="callmodal-num">010-3038-8978</b>
+    <p class="who">아이의 학년과 과목을 말씀해 주시면 딱 맞는 선생님을 안내해 드려요. 통화가 어려우면 아래 상담 신청을 남겨주세요.</p>
+    <div class="acts">
+      <a class="go" href="tel:01030388978" data-direct="1">전화 걸기</a>
+      <button type="button" class="copy" id="callmodal-copy">번호 복사</button>
+      <button type="button" class="close" id="callmodal-close">닫기</button>
+    </div>
+    <div class="copied" id="callmodal-msg"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var m=document.getElementById('callmodal'); if(!m) return;
+  var isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches&&innerWidth<900);
+  function open(){ m.classList.add('on'); document.getElementById('callmodal-msg').textContent=''; }
+  function close(){ m.classList.remove('on'); }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="tel:"]'); if(!a) return;
+    if(a.getAttribute('data-direct')||isMobile) return;
+    e.preventDefault(); open();
+  });
+  document.getElementById('callmodal-close').addEventListener('click',close);
+  m.addEventListener('click',function(e){ if(e.target===m) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+  document.getElementById('callmodal-copy').addEventListener('click',function(){
+    var msg=document.getElementById('callmodal-msg');
+    function done(){ msg.textContent='번호를 복사했어요. 010-3038-8978'; }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText('010-3038-8978').then(done,function(){ msg.textContent='010-3038-8978 을 직접 입력해 주세요.'; }); }
+    else { msg.textContent='010-3038-8978 을 직접 입력해 주세요.'; }
   });
 })();
 </script>
