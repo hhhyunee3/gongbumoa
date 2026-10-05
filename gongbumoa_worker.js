@@ -1133,7 +1133,9 @@ const LESSON_FLOW = {
 
 // 콘텐츠를 실제로 고쳐 배포한 날. RSS pubDate 등 날짜 신호의 기준이 된다.
 // 해시로 지어낸 날짜를 쓰면 실제 변경과 어긋나므로 사람이 직접 갱신한다.
-const CONTENT_UPDATED = '2026-09-11';
+// 본문 '최종 업데이트'·JSON-LD dateModified·RSS 날짜. 손으로 고치지 않는다 — ~/projects/deploy.sh 가 git 에서
+// 본문이 마지막으로 바뀐 날을 읽어 CONTENT_DATE 로 넣는다(wrangler --define). 아래 값은 로컬 개발용 기본값.
+const CONTENT_UPDATED = typeof CONTENT_DATE !== 'undefined' ? CONTENT_DATE : '2026-09-11';
 
 // 사이트맵에 넣을 계층.
 // 페이지 자체는 그대로 살아 있고 링크로도 닿는다. 여기서 빼는 것은
