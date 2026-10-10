@@ -1,3 +1,4 @@
+import { guardResponse } from './telguard.js'; // 전화번호: 푸터에서 삭제, PC 너비에서 숨김 (2026-10-10)
 /**
  * 공부모아 (gongbumoa) - Cloudflare Worker
  *
@@ -568,7 +569,7 @@ const HOME_HTML = `<!DOCTYPE html>
     <div class="form-card reveal">
       <div class="form-head">
         <h2>수업 상담 신청</h2>
-        <p>무료 30분 시범수업 받아보실 수 있습니다.<br>신청을 남겨주시면 순차적으로 연락드리고 있습니다 😊<br>급하신 경우 <a href="tel:01030388978" style="color:var(--blue-deep);font-weight:800">010-3038-8978</a> 로 전화 주세요.</p>
+        <p>무료 30분 시범수업 받아보실 수 있습니다.<br>신청을 남겨주시면 순차적으로 연락드리고 있습니다 😊<span class="pc-hide"><br>급하신 경우 <a href="tel:01030388978" style="color:var(--blue-deep);font-weight:800">010-3038-8978</a> 로 전화 주세요.</span></p>
         <p class="inq-line" hidden style="margin-top:10px;font-size:14px;color:var(--blue-deep);font-weight:700">지금까지 누적 <b class="inq-n" style="font-size:16px"></b>건의 상담이 접수되었습니다</p>
       </div>
       <script>(function(){fetch('/api/stats').then(function(r){return r.json()}).then(function(d){if(!d||!d.count||d.count<1)return;var t=d.count,s=Math.max(0,t-Math.max(5,Math.ceil(t*0.15))),cur=s,steps=20,inc=(t-s)/steps,i=0;document.querySelectorAll('.inq-line').forEach(function(e){e.hidden=false});function tick(){i++;cur=i>=steps?t:cur+inc;var v=Math.round(cur).toLocaleString('ko-KR');document.querySelectorAll('.inq-n').forEach(function(n){n.textContent=v});if(i<steps)setTimeout(tick,40)}tick()}).catch(function(){})})();</script>
@@ -710,7 +711,7 @@ const HOME_HTML = `<!DOCTYPE html>
           form.reset(); $('fP1').value='010'; $('fMemo').value='과외 문의드립니다.'; }
         else{ throw 0; }
       })
-      .catch(function(){ msg.textContent='일시적인 오류가 발생했어요. 잠시 후 다시 시도하거나 010-3038-8978 로 전화 주세요.'; msg.classList.add('fail'); })
+      .catch(function(){ msg.textContent='일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; msg.classList.add('fail'); })
       .finally(function(){ btn.disabled=false; btn.textContent='제출'; });
     });
   })();
@@ -3531,7 +3532,7 @@ async function handleConsultPost(request, env) {
 
 /* ---------------- 라우터 ---------------- */
 
-export default {
+const __APP = {
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = SITE.origin || url.origin;
@@ -3757,3 +3758,6 @@ ${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description
   },
 };
 
+
+// 모든 HTML 응답을 telguard 로 한 번 거친다 (fetch 만 감싸고 scheduled 등 나머지는 그대로)
+export default { ...__APP, fetch: (req, env, ctx) => guardResponse(__APP.fetch(req, env, ctx)) };
