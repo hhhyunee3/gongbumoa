@@ -18,3 +18,8 @@ directory = "./public/"
 [[send_email]]
 name = "NOTIFY"
 destination_address = "hhhyunee3@naver.com"
+
+# 2026-11-05 알림 이중화: 문의 보관(KV). 외국어·과외·학원 사이트와 같은 이름공간. 키: YYYYMMDDhhmmss-gongbumoa.com-xxxxxx
+[[kv_namespaces]]
+binding = "INQUIRY"
+id = "577f9b3a7b6c46d18ae828e15d8d6032"

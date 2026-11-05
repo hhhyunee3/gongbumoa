@@ -711,7 +711,7 @@ const HOME_HTML = `<!DOCTYPE html>
           form.reset(); $('fP1').value='010'; $('fMemo').value='과외 문의드립니다.'; }
         else{ throw 0; }
       })
-      .catch(function(){ msg.textContent='일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; msg.classList.add('fail'); })
+      .catch(function(){ msg.textContent='접수 중 문제가 생겼어요. 010-3038-8978 로 전화나 문자 주시면 바로 상담 도와드릴게요.'; msg.classList.add('fail'); })
       .finally(function(){ btn.disabled=false; btn.textContent='제출'; });
     });
   })();
@@ -1536,9 +1536,9 @@ var btn=form.querySelector('.pf-submit');btn.disabled=true;btn.textContent='접�
 fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('pcName').value.trim(),grade:$('pcGrade').value,subject:$('pcSubject').value.trim(),phone:phone,addr:$('pcAddr').value.trim(),addrDetail:$('pcAddrDetail').value.trim(),memo:$('pcMemo').value.trim(),website:$('pcWebsite').value,page:(document.title.split(' | ')[0]+' · '+location.pathname).slice(0,200)})})
 .then(function(r){return r.json()}).then(function(d){
 if(d&&d.ok){msg.className='form-msg ok';msg.textContent='신청이 접수되었습니다! 순차적으로 연락드릴게요 😊';form.reset();$('pcP1').value='010';}
-else{msg.className='form-msg no';msg.textContent='접수에 실패했어요. 잠시 후 다시 시도하거나 전화 주세요.';}
+else{msg.className='form-msg no';msg.textContent='접수 중 문제가 생겼어요. 010-3038-8978 로 전화나 문자 주시면 바로 상담 도와드릴게요.';}
 btn.disabled=false;btn.textContent='무료 상담 신청하기';})
-.catch(function(){msg.className='form-msg no';msg.textContent='네트워크 오류가 발생했어요. 전화 주시면 바로 상담됩니다.';btn.disabled=false;btn.textContent='무료 상담 신청하기';});
+.catch(function(){msg.className='form-msg no';msg.textContent='접수 중 문제가 생겼어요. 010-3038-8978 로 전화나 문자 주시면 바로 상담 도와드릴게요.';btn.disabled=false;btn.textContent='무료 상담 신청하기';});
 });
 })();</script>`;
 }
@@ -3466,6 +3466,9 @@ async function sendNotifyMail(env, entry) {
     `From: =?UTF-8?B?${b64utf8('공부모아')}?= <${NOTIFY_FROM}>`,
     `To: <${NOTIFY_TO}>`,
     `Subject: =?UTF-8?B?${b64utf8(subject)}?=`,
+    // 2026-11-05: Date·Message-ID 가 없으면 Cloudflare 스팸 점수 5점(기준 5)으로 거부된다(10/21·10/29 문의 유실).
+    `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`,
+    `Message-ID: <${crypto.randomUUID()}@gongbumoa.com>`,
     'MIME-Version: 1.0',
     'Content-Type: text/html; charset=utf-8',
     'Content-Transfer-Encoding: base64',
@@ -3483,8 +3486,24 @@ async function sendNotifyMail(env, entry) {
   return env.NOTIFY.send(msg);
 }
 
+// 텔레그램: 첫 줄 [공부모아]. 5초 넘으면 끊는다.
+async function sendTelegram(env, e) {
+  const token = env.TELEGRAM_BOT_TOKEN, chat = env.TELEGRAM_CHAT_ID;
+  if (!token || !chat) return false;
+  const lines = ['[' + SITE.name + '] 새 상담 신청', '',
+    '학생: ' + e.name + (e.grade ? ' · ' + e.grade : '') + (e.subject ? ' · ' + e.subject : ''),
+    '연락처: ' + e.phone, '주소: ' + (e.addr + ' ' + e.addrDetail).trim(),
+    '내용: ' + (e.memo || '-'), '유입: ' + (e.page || '/'),
+    new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })];
+  const r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ chat_id: chat, text: lines.join('\n'), disable_web_page_preview: true }),
+  });
+  if (!r.ok) throw new Error('텔레그램 응답 ' + r.status);
+  return true;
+}
+
 async function handleConsultPost(request, env) {
-  if (!env.NOTIFY) return json({ ok: false, error: 'no-mail' }, 500);
   let d;
   try { d = await request.json(); } catch { return json({ ok: false }, 400); }
   if (d.website) return json({ ok: true }); // 스팸봇 허니팟
@@ -3502,25 +3521,27 @@ async function handleConsultPost(request, env) {
     memo: String(d.memo || '').trim().slice(0, 500),
     page: String(d.page || '').slice(0, 200),
   };
-  // 백업(시트)은 메일 성공 여부와 무관하게 시도한다.
-  // 이전에는 메일이 실패하면 여기서 바로 반환해 시트에도 안 남았다.
-  // 백업이 주 경로의 성공에 의존하면 백업이 아니다.
-  let mailOk = false, sheetOk = false;
+  // 2026-11-05 알림 이중화: KV 보관을 맨 먼저 한다. "접수 완료"는 KV 저장이 성공했을 때만.
+  // KV 가 실패하면 전화 안내 오류를 돌려준다. 메일·텔레그램·시트는 그 뒤에, 실패해도 접수 결과에 영향 없음.
   try {
-    await sendNotifyMail(env, entry);
-    mailOk = true;
+    if (!env.INQUIRY) throw new Error('INQUIRY 바인딩 없음');
+    const t = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+    const at = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+    await env.INQUIRY.put(`${t}-gongbumoa.com-${Math.random().toString(36).slice(2, 8)}`,
+      JSON.stringify({ site: SITE.name, domain: 'gongbumoa.com', at: new Date().toISOString(), atDisplay: at, ...entry }), { expirationTtl: 60 * 60 * 24 * 365 });
   } catch (e) {
-    console.log('알림 메일 발송 실패:', e && e.message ? e.message : e);
+    console.log('KV 보관 실패:', e && e.message ? e.message : e);
+    return json({ ok: false, error: 'kv-fail', tel: CONTACT_TEL }, 500);
   }
-  try { await saveToGoogleForm(entry); } catch (e) { /* 폼 백업 실패는 무시 */ }
-  // 구글 시트 기록. 두 사이트가 같은 시트를 쓰도록 필드 이름을 맞춰 보낸다.
-  try { sheetOk = await saveToSheet(env, entry); } catch (e) { console.log('시트 기록 실패:', e && e.message); }
-
-  console.log('새 상담 신청:', JSON.stringify(entry), '| 메일:', mailOk, '| 시트:', sheetOk);
-  if (!mailOk && !sheetOk) {
-    // 어디에도 남지 않았다. 완료라고 말하면 신청이 그대로 사라진다.
-    return json({ ok: false, error: 'mail-fail' }, 500);
-  }
+  const res = await Promise.allSettled([
+    env.NOTIFY ? sendNotifyMail(env, entry).then(() => true) : Promise.resolve(false),
+    sendTelegram(env, entry),
+    saveToSheet(env, entry),
+    saveToGoogleForm(entry),
+  ]);
+  const st = (x) => (x.status === 'fulfilled' ? (x.value ? '성공' : '건너뜀') : '실패');
+  console.log('새 상담 신청 · 메일 ' + st(res[0]) + ' · 텔레그램 ' + st(res[1]) + ' · 시트 ' + st(res[2]));
+  res.slice(0, 3).forEach((x, i) => { if (x.status === 'rejected') console.log(['메일', '텔레그램', '시트'][i] + ' 오류:', x.reason && x.reason.message ? x.reason.message : x.reason); });
   try {
     if (env.STATS) {
       const cur = parseInt(await env.STATS.get('consult_count') || '0', 10);
