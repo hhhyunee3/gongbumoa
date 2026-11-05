@@ -3421,7 +3421,7 @@ function b64utf8(s) {
 async function sendNotifyMail(env, entry) {
   // 주소 앞부분(시도+시군구)을 제목에 노출: "경남 창원시"
   const region = entry.addr.split(' ').slice(0, 2).join(' ');
-  const subject = `[공부모아] ${entry.subject || '과외'} 상담 신청 - ${entry.name} (${region})`;
+  const subject = `${entry.flag ? '[봇 의심] ' : ''}[공부모아] ${entry.subject || '과외'} 상담 신청 - ${entry.name} (${region})`;
   const telDigits = entry.phone.replace(/[^0-9]/g, '');
   const when = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
@@ -3490,7 +3490,7 @@ async function sendNotifyMail(env, entry) {
 async function sendTelegram(env, e) {
   const token = env.TELEGRAM_BOT_TOKEN, chat = env.TELEGRAM_CHAT_ID;
   if (!token || !chat) return false;
-  const lines = ['[' + SITE.name + '] 새 상담 신청', '',
+  const lines = [(e.flag ? '⚠️ [봇 의심] ' : '') + '[' + SITE.name + '] 새 상담 신청', e.flag ? '숨은 칸 값: ' + e.hp : '',
     '학생: ' + e.name + (e.grade ? ' · ' + e.grade : '') + (e.subject ? ' · ' + e.subject : ''),
     '연락처: ' + e.phone, '주소: ' + (e.addr + ' ' + e.addrDetail).trim(),
     '내용: ' + (e.memo || '-'), '유입: ' + (e.page || '/'),
@@ -3506,7 +3506,8 @@ async function sendTelegram(env, e) {
 async function handleConsultPost(request, env) {
   let d;
   try { d = await request.json(); } catch { return json({ ok: false }, 400); }
-  if (d.website) return json({ ok: true }); // 스팸봇 허니팟
+  // 숨은 칸(website)이 채워져도 버리지 않는다(2026-11-05). 제목·텔레그램에 [봇 의심]만 붙이고 시트에는 쓰지 않는다.
+  const hp = String(d.website || '').trim();
   const name = String(d.name || '').trim().slice(0, 20);
   const grade = String(d.grade || '').trim().slice(0, 10);
   const phone = String(d.phone || '').trim().slice(0, 14);
@@ -3521,13 +3522,14 @@ async function handleConsultPost(request, env) {
     memo: String(d.memo || '').trim().slice(0, 500),
     page: String(d.page || '').slice(0, 200),
   };
+  if (hp) Object.assign(entry, { flag: '봇 의심', hp: hp.slice(0, 200) });
   // 2026-11-05 알림 이중화: KV 보관을 맨 먼저 한다. "접수 완료"는 KV 저장이 성공했을 때만.
   // KV 가 실패하면 전화 안내 오류를 돌려준다. 메일·텔레그램·시트는 그 뒤에, 실패해도 접수 결과에 영향 없음.
   try {
     if (!env.INQUIRY) throw new Error('INQUIRY 바인딩 없음');
     const t = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
     const at = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
-    await env.INQUIRY.put(`${t}-gongbumoa.com-${Math.random().toString(36).slice(2, 8)}`,
+    await env.INQUIRY.put(`${t}-gongbumoa.com-${entry.flag ? 'suspect-' : ''}${Math.random().toString(36).slice(2, 8)}`,
       JSON.stringify({ site: SITE.name, domain: 'gongbumoa.com', at: new Date().toISOString(), atDisplay: at, ...entry }), { expirationTtl: 60 * 60 * 24 * 365 });
   } catch (e) {
     console.log('KV 보관 실패:', e && e.message ? e.message : e);
@@ -3536,8 +3538,8 @@ async function handleConsultPost(request, env) {
   const res = await Promise.allSettled([
     env.NOTIFY ? sendNotifyMail(env, entry).then(() => true) : Promise.resolve(false),
     sendTelegram(env, entry),
-    saveToSheet(env, entry),
-    saveToGoogleForm(entry),
+    entry.flag ? Promise.resolve(false) : saveToSheet(env, entry),
+    entry.flag ? Promise.resolve(false) : saveToGoogleForm(entry),
   ]);
   const st = (x) => (x.status === 'fulfilled' ? (x.value ? '성공' : '건너뜀') : '실패');
   console.log('새 상담 신청 · 메일 ' + st(res[0]) + ' · 텔레그램 ' + st(res[1]) + ' · 시트 ' + st(res[2]));
