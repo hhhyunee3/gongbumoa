@@ -1,3 +1,4 @@
+import { withCapture, inquirySource, tgPayload, tgPreview } from './inqsrc.js'; // 신청 페이지·처음 들어온 페이지·유입 (2026-11-05)
 import { guardResponse } from './telguard.js'; // 전화번호: 푸터에서 삭제, PC 너비에서 숨김 (2026-10-10)
 /**
  * 공부모아 (gongbumoa) - Cloudflare Worker
@@ -704,7 +705,7 @@ const HOME_HTML = `<!DOCTYPE html>
       fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({name:$('fName').value.trim(),grade:$('fGrade').value,subject:$('fSubject').value.trim(),
           phone:p1+'-'+p2+'-'+p3,addr:$('fAddr').value,addrDetail:$('fAddrDetail').value.trim(),
-          memo:$('fMemo').value.trim(),website:$('fWebsite').value,page:location.pathname})})
+          memo:$('fMemo').value.trim(),website:$('fWebsite').value,page:location.pathname,ctx_p:location.pathname+location.search,ctx_f:(function(){try{return sessionStorage.getItem('cn_f')||''}catch(e){return ''}})(),ctx_r:(function(){try{return sessionStorage.getItem('cn_r')||''}catch(e){return ''}})()})})
       .then(function(r){return r.json()})
       .then(function(j){
         if(j.ok){ msg.textContent='신청이 접수되었습니다! 순차적으로 연락드릴게요 😊'; msg.classList.add('ok');
@@ -1533,7 +1534,7 @@ mark($('pcAddr'),!$('pcAddr').value.trim());
 mark($('pcAddrDetail'),!$('pcAddrDetail').value.trim());
 if(bad){msg.className='form-msg no';msg.textContent='빨간 항목을 확인해 주세요.';bad.focus();return;}
 var btn=form.querySelector('.pf-submit');btn.disabled=true;btn.textContent='접수 중...';
-fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('pcName').value.trim(),grade:$('pcGrade').value,subject:$('pcSubject').value.trim(),phone:phone,addr:$('pcAddr').value.trim(),addrDetail:$('pcAddrDetail').value.trim(),memo:$('pcMemo').value.trim(),website:$('pcWebsite').value,page:(document.title.split(' | ')[0]+' · '+location.pathname).slice(0,200)})})
+fetch('/api/consult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('pcName').value.trim(),grade:$('pcGrade').value,subject:$('pcSubject').value.trim(),phone:phone,addr:$('pcAddr').value.trim(),addrDetail:$('pcAddrDetail').value.trim(),memo:$('pcMemo').value.trim(),website:$('pcWebsite').value,page:(document.title.split(' | ')[0]+' · '+location.pathname).slice(0,200),ctx_p:location.pathname+location.search,ctx_f:(function(){try{return sessionStorage.getItem('cn_f')||''}catch(e){return ''}})(),ctx_r:(function(){try{return sessionStorage.getItem('cn_r')||''}catch(e){return ''}})()})})
 .then(function(r){return r.json()}).then(function(d){
 if(d&&d.ok){msg.className='form-msg ok';msg.textContent='신청이 접수되었습니다! 순차적으로 연락드릴게요 😊';form.reset();$('pcP1').value='010';}
 else{msg.className='form-msg no';msg.textContent='접수 중 문제가 생겼어요. 010-3038-8978 로 전화나 문자 주시면 바로 상담 도와드릴게요.';}
@@ -3455,7 +3456,9 @@ async function sendNotifyMail(env, entry) {
         </div>
         <div style="color:#A7AABB;font-size:12px;padding:12px 0 20px">
           신청 시간: ${when}<br>
-          신청 페이지: ${esc(entry.page || '/')}
+          신청 페이지: ${entry.pageUrl ? `<a href="${esc(entry.pageUrl)}">${esc(decodeURI(entry.pageUrl))}</a>` : esc(entry.page || '/')}<br>
+          처음 들어온 페이지: ${entry.firstUrl ? `<a href="${esc(entry.firstUrl)}">${esc(decodeURI(entry.firstUrl))}</a>` : '-'}<br>
+          유입: ${esc(entry.source || '-')}
         </div>
       </div>
     </div>
@@ -3488,16 +3491,19 @@ async function sendNotifyMail(env, entry) {
 
 // 텔레그램: 첫 줄 [공부모아]. 5초 넘으면 끊는다.
 async function sendTelegram(env, e) {
+  // 이모티콘 없이 항목 이름으로 구분(2026-11-05). TG_PREVIEW(로컬 --var)면 보낼 내용을 로그로 남긴다.
+  const lines = ['[' + SITE.name + ']' + (e.flag ? ' [봇 의심]' : '') + ' 새 상담 신청', e.flag ? '숨은 칸 값: ' + e.hp : '', '',
+    '학생: ' + e.name, '연락처: ' + e.phone,
+    e.grade ? '학년: ' + e.grade : '', e.subject ? '과목: ' + e.subject : '',
+    '주소: ' + (e.addr + ' ' + e.addrDetail).trim(), '내용: ' + (e.memo || '-'),
+    '신청 페이지: ' + (e.pageUrl || '-'), '처음 들어온 페이지: ' + (e.firstUrl || '-'), '유입: ' + (e.source || '-'),
+    '접수: ' + new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })].filter((x, i) => x || i === 2);
+  if (env.TG_PREVIEW) console.log('[텔레그램 미리보기]\n' + tgPreview(lines.join('\n')));
   const token = env.TELEGRAM_BOT_TOKEN, chat = env.TELEGRAM_CHAT_ID;
   if (!token || !chat) return false;
-  const lines = [(e.flag ? '⚠️ [봇 의심] ' : '') + '[' + SITE.name + '] 새 상담 신청', e.flag ? '숨은 칸 값: ' + e.hp : '',
-    '학생: ' + e.name + (e.grade ? ' · ' + e.grade : '') + (e.subject ? ' · ' + e.subject : ''),
-    '연락처: ' + e.phone, '주소: ' + (e.addr + ' ' + e.addrDetail).trim(),
-    '내용: ' + (e.memo || '-'), '유입: ' + (e.page || '/'),
-    new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })];
   const r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
     method: 'POST', headers: { 'content-type': 'application/json' }, signal: AbortSignal.timeout(5000),
-    body: JSON.stringify({ chat_id: chat, text: lines.join('\n'), disable_web_page_preview: true }),
+    body: JSON.stringify(tgPayload(chat, lines.join('\n'))),
   });
   if (!r.ok) throw new Error('텔레그램 응답 ' + r.status);
   return true;
@@ -3523,6 +3529,7 @@ async function handleConsultPost(request, env) {
     page: String(d.page || '').slice(0, 200),
   };
   if (hp) Object.assign(entry, { flag: '봇 의심', hp: hp.slice(0, 200) });
+  Object.assign(entry, inquirySource(d, 'https://gongbumoa.com', entry.page)); // 신청 페이지·처음 들어온 페이지(전체 URL)·유입
   // 2026-11-05 알림 이중화: KV 보관을 맨 먼저 한다. "접수 완료"는 KV 저장이 성공했을 때만.
   // KV 가 실패하면 전화 안내 오류를 돌려준다. 메일·텔레그램·시트는 그 뒤에, 실패해도 접수 결과에 영향 없음.
   try {
@@ -3783,4 +3790,4 @@ ${items.map(i => `<item><title>${xe(i.t)}</title><link>${i.u}</link><description
 
 
 // 모든 HTML 응답을 telguard 로 한 번 거친다 (fetch 만 감싸고 scheduled 등 나머지는 그대로)
-export default { ...__APP, fetch: (req, env, ctx) => guardResponse(__APP.fetch(req, env, ctx)) };
+export default { ...__APP, fetch: (req, env, ctx) => withCapture(guardResponse(__APP.fetch(req, env, ctx))) };
