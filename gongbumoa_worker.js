@@ -3509,7 +3509,7 @@ async function sendTelegram(env, e) {
   return true;
 }
 
-async function handleConsultPost(request, env) {
+async function handleConsultPost(request, env, ctx) {
   let d;
   try { d = await request.json(); } catch { return json({ ok: false }, 400); }
   // 숨은 칸(website)이 채워져도 버리지 않는다(2026-11-05). 제목·텔레그램에 [봇 의심]만 붙이고 시트에는 쓰지 않는다.
@@ -3542,28 +3542,32 @@ async function handleConsultPost(request, env) {
     console.log('KV 보관 실패:', e && e.message ? e.message : e);
     return json({ ok: false, error: 'kv-fail', tel: CONTACT_TEL }, 500);
   }
-  const res = await Promise.allSettled([
-    env.NOTIFY ? sendNotifyMail(env, entry).then(() => true) : Promise.resolve(false),
-    sendTelegram(env, entry),
-    entry.flag ? Promise.resolve(false) : saveToSheet(env, entry),
-    entry.flag ? Promise.resolve(false) : saveToGoogleForm(entry),
-  ]);
-  const st = (x) => (x.status === 'fulfilled' ? (x.value ? '성공' : '건너뜀') : '실패');
-  console.log('새 상담 신청 · 메일 ' + st(res[0]) + ' · 텔레그램 ' + st(res[1]) + ' · 시트 ' + st(res[2]));
-  res.slice(0, 3).forEach((x, i) => { if (x.status === 'rejected') console.log(['메일', '텔레그램', '시트'][i] + ' 오류:', x.reason && x.reason.message ? x.reason.message : x.reason); });
-  try {
-    if (env.STATS) {
-      const cur = parseInt(await env.STATS.get('consult_count') || '0', 10);
-      await env.STATS.put('consult_count', String(cur + 1));
-    }
-  } catch (e) { /* 카운터 실패는 무시 */ }
+  // 2026-11-12: KV 성공 = 접수 완료를 바로 돌려주고, 알림은 응답 뒤 ctx.waitUntil 로 이어서 보낸다(손님이 창을 닫아도 끊기지 않음).
+  const job = (async () => {
+    const res = await Promise.allSettled([
+      env.NOTIFY ? sendNotifyMail(env, entry).then(() => true) : Promise.resolve(false),
+      sendTelegram(env, entry),
+      entry.flag ? Promise.resolve(false) : saveToSheet(env, entry),
+      entry.flag ? Promise.resolve(false) : saveToGoogleForm(entry),
+    ]);
+    const st = (x) => (x.status === 'fulfilled' ? (x.value ? '성공' : '건너뜀') : '실패');
+    console.log('새 상담 신청 · 메일 ' + st(res[0]) + ' · 텔레그램 ' + st(res[1]) + ' · 시트 ' + st(res[2]));
+    res.slice(0, 3).forEach((x, i) => { if (x.status === 'rejected') console.log(['메일', '텔레그램', '시트'][i] + ' 오류:', x.reason && x.reason.message ? x.reason.message : x.reason); });
+    try {
+      if (env.STATS) {
+        const cur = parseInt(await env.STATS.get('consult_count') || '0', 10);
+        await env.STATS.put('consult_count', String(cur + 1));
+      }
+    } catch (e) { /* 카운터 실패는 무시 */ }
+  })();
+  if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(job); else await job;
   return json({ ok: true });
 }
 
 /* ---------------- 라우터 ---------------- */
 
 const __APP = {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const origin = SITE.origin || url.origin;
     const path = decodeURIComponent(url.pathname);
@@ -3573,7 +3577,7 @@ const __APP = {
       return json({ list: q.trim().length >= 2 ? searchSchools(q) : [] });
     }
     if (path === '/api/consult' && request.method === 'POST') {
-      return handleConsultPost(request, env);
+      return handleConsultPost(request, env, ctx);
     }
     if (path === '/api/stats') {
       let count = null;
